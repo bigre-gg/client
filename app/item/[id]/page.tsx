@@ -1,0 +1,27 @@
+import { notFound } from "next/navigation";
+import fs from "fs";
+import path from "path";
+
+interface Item {
+  id: number;
+  name: string;
+}
+
+export default async function ItemDetail({
+  params,
+}: {
+  params: { id: string };
+}) {
+  // public 폴더의 items.json을 읽음
+  const filePath = path.join(process.cwd(), "public", "items.json");
+  const data = fs.readFileSync(filePath, "utf-8");
+  const items: Item[] = JSON.parse(data);
+  const item = items.find((i) => i.id === Number(params.id));
+  if (!item) return notFound();
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white">
+      <h1 className="text-3xl font-bold mb-4">{item.name}</h1>
+      <p className="text-lg">아이템 ID: {item.id}</p>
+    </div>
+  );
+}
