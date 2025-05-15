@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import ItemIcon from "./ItemIcon";
 
 interface Item {
   id: number;
@@ -42,6 +43,11 @@ function getChosung(str: string) {
   return result;
 }
 
+function isChosung(str: string) {
+  // 한글 자음(초성)만으로 이루어진 문자열인지 체크
+  return /^[ㄱ-ㅎ]+$/.test(str);
+}
+
 const RECENT_KEY = "recent_search_items";
 const FAVORITE_KEY = "favorite_items";
 
@@ -75,11 +81,7 @@ export default function SearchBox() {
     }
     setResults(
       items.filter((item) => {
-        // 일반 검색
-        if (item.name.includes(query)) return true;
-        // 초성 검색
-        if (getChosung(item.name).includes(query)) return true;
-        return false;
+        return item.name.includes(query);
       })
     );
   }, [query, items]);
@@ -131,7 +133,10 @@ export default function SearchBox() {
       className="flex items-center justify-between p-3 cursor-pointer hover:bg-zinc-700 border-b border-zinc-700 last:border-b-0 transition-colors"
       onClick={() => handleItemClick(item)}
     >
-      <span>{item.name}</span>
+      <div className="flex items-center">
+        <ItemIcon id={item.id} size={32} />
+        <span>{item.name}</span>
+      </div>
       <button
         onClick={(e) => {
           e.stopPropagation();
