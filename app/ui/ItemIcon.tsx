@@ -11,11 +11,11 @@ export default function ItemIcon({
   const src = `https://maplestory.io/api/gms/123/item/${id}/icon`;
   return (
     <div
+      className="bg-lightBg dark:bg-darkBg"
       style={{
         width: size,
         height: size,
         borderRadius: 8,
-        background: "#222",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",

@@ -2,6 +2,8 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import ItemIcon from "./ItemIcon";
+import { StarIcon as StarSolid } from "@heroicons/react/24/solid";
+import { StarIcon as StarOutline } from "@heroicons/react/24/outline";
 
 interface Item {
   id: number;
@@ -127,31 +129,36 @@ export default function SearchBox() {
     router.push(`/item/${item.id}`);
   };
 
-  const renderItem = (item: Item) => (
-    <div
-      key={item.id}
-      className="flex items-center justify-between p-3 cursor-pointer hover:bg-zinc-700 border-b border-zinc-700 last:border-b-0 transition-colors"
-      onClick={() => handleItemClick(item)}
-    >
-      <div className="flex items-center">
-        <ItemIcon id={item.id} size={32} />
-        <span>{item.name}</span>
-      </div>
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          toggleFavorite(item);
-        }}
-        onMouseDown={(e) => e.preventDefault()}
-        className="ml-2 text-yellow-400"
-        title={
-          favorite.find((i) => i.id === item.id) ? "즐겨찾기 해제" : "즐겨찾기"
-        }
+  const renderItem = (item: Item) => {
+    const isFavorite = favorite.find((i) => i.id === item.id);
+    return (
+      <div
+        key={item.id}
+        className="flex items-center justify-between p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-800 border-b border-gray-400 dark:border-gray-700 last:border-b-0 transition-colors"
+        onClick={() => handleItemClick(item)}
       >
-        {favorite.find((i) => i.id === item.id) ? "★" : "☆"}
-      </button>
-    </div>
-  );
+        <div className="flex items-center">
+          <ItemIcon id={item.id} size={32} />
+          <span>{item.name}</span>
+        </div>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            toggleFavorite(item);
+          }}
+          onMouseDown={(e) => e.preventDefault()}
+          className="ml-2 rounded-full p-1 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          title={isFavorite ? "즐겨찾기 해제" : "즐겨찾기"}
+        >
+          {isFavorite ? (
+            <StarSolid className="w-7 h-7 text-yellow-400" />
+          ) : (
+            <StarOutline className="w-7 h-7 text-gray-400 dark:text-gray-500" />
+          )}
+        </button>
+      </div>
+    );
+  };
 
   // 검색창 포커스/블러 핸들링
   const handleInputFocus = () => {
@@ -190,17 +197,22 @@ export default function SearchBox() {
           onFocus={handleInputFocus}
           onBlur={handleInputBlur}
           placeholder="아이템 검색"
-          className="w-full p-3 text-lg rounded bg-zinc-900 text-white outline-none mb-2"
+          className="w-full p-3 text-lg rounded bg-lightBg dark:bg-darkBg text-darkBg dark:text-lightBg mb-2 focus:outline-none focus:ring-2 focus:ring-zinc-300 dark:focus:ring-zinc-700 focus:ring-offset-0 transition-all"
           autoFocus
         />
         {/* 최근검색/즐겨찾기 패널 */}
         {showRecentAndFavorite && (
           <div
-            className="absolute left-0 right-0 z-10 flex gap-4 bg-transparent transition-opacity duration-300 opacity-100"
+            className={
+              "absolute left-0 right-0 z-10 flex gap-4 bg-transparent transition-all duration-300 " +
+              (showRecentAndFavorite
+                ? "opacity-100 translate-y-0 pointer-events-auto"
+                : "opacity-0 translate-y-2 pointer-events-none")
+            }
             style={{ top: "calc(100% + 4px)" }}
           >
             {/* 최근검색 */}
-            <div className="flex-1 bg-zinc-800 rounded p-2 overflow-y-auto">
+            <div className="flex-1 bg-lightBg dark:bg-darkBg text-darkBg dark:text-lightBg rounded p-2 overflow-y-auto border border-zinc-300 dark:border-zinc-700">
               <div className="flex justify-between items-center mb-1">
                 <span className="text-xs text-zinc-400">최근검색</span>
                 <button
@@ -218,7 +230,7 @@ export default function SearchBox() {
               )}
             </div>
             {/* 즐겨찾기 */}
-            <div className="flex-1 bg-zinc-800 rounded p-2 overflow-y-auto">
+            <div className="flex-1 bg-lightBg dark:bg-darkBg text-darkBg dark:text-lightBg rounded p-2 overflow-y-auto border border-zinc-300 dark:border-zinc-700">
               <div className="flex justify-between items-center mb-1">
                 <span className="text-xs text-zinc-400">즐겨찾기</span>
                 <button
@@ -240,7 +252,12 @@ export default function SearchBox() {
         {/* 검색결과 패널 */}
         {showResults && (
           <div
-            className="absolute left-0 right-0 z-10 bg-zinc-800 text-white rounded max-h-72 overflow-y-auto shadow-lg w-full transition-opacity duration-300 opacity-100"
+            className={
+              "absolute left-0 right-0 z-10 bg-lightBg dark:bg-darkBg text-darkBg dark:text-lightBg rounded max-h-72 overflow-y-auto shadow-lg w-full transition-all duration-300 border border-zinc-300 dark:border-zinc-700 " +
+              (showResults
+                ? "opacity-100 translate-y-0 pointer-events-auto"
+                : "opacity-0 translate-y-2 pointer-events-none")
+            }
             style={{ top: "calc(100% + 4px)" }}
           >
             {results.map(renderItem)}
