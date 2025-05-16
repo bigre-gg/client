@@ -10,6 +10,10 @@ interface Item {
   name: string;
 }
 
+interface SearchBoxProps {
+  variant?: "main" | "header";
+}
+
 // 한글 초성 추출 함수
 function getChosung(str: string) {
   const CHOSUNG_LIST = [
@@ -53,7 +57,7 @@ function isChosung(str: string) {
 const RECENT_KEY = "recent_search_items";
 const FAVORITE_KEY = "favorite_items";
 
-export default function SearchBox() {
+export default function SearchBox({ variant = "main" }: SearchBoxProps) {
   const [query, setQuery] = useState("");
   const [items, setItems] = useState<Item[]>([]);
   const [results, setResults] = useState<Item[]>([]);
@@ -177,16 +181,26 @@ export default function SearchBox() {
 
   return (
     <div
-      style={{
-        position: "absolute",
-        left: "50%",
-        top: "35%",
-        transform: "translate(-50%, -50%)",
-        width: 500,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-      }}
+      style={
+        variant === "main"
+          ? {
+              position: "absolute",
+              left: "50%",
+              top: "35%",
+              transform: "translate(-50%, -50%)",
+              width: 500,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+            }
+          : {
+              position: "static",
+              width: 500,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+            }
+      }
     >
       <div className="w-full relative" ref={containerRef}>
         <input

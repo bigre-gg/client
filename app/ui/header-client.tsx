@@ -3,6 +3,9 @@ import { useEffect, useState } from "react";
 import { SunIcon, MoonIcon } from "@heroicons/react/24/solid";
 import ProfileDropdown from "./profile-dropdown";
 import Image from "next/image";
+import SearchBox from "./search-box";
+import { usePathname } from "next/navigation";
+import Link from "next/link";
 
 export default function Header({ isLoggedIn }: { isLoggedIn: boolean }) {
   const [isDark, setIsDark] = useState(false);
@@ -29,7 +32,11 @@ export default function Header({ isLoggedIn }: { isLoggedIn: boolean }) {
   return (
     <header className="w-full flex flex-col items-center h-16 bg-lightBg dark:bg-darkBg text-darkBg dark:text-lightBg border-b border-zinc-400 dark:border-zinc-700">
       <div className="w-full max-w-6xl flex justify-between items-center px-6 h-full">
-        <div className="flex items-center gap-2">
+        <Link
+          href="/"
+          className="flex items-center gap-2"
+          aria-label="메인페이지로 이동"
+        >
           <Image
             src="/favicon.png"
             alt="로고"
@@ -40,7 +47,12 @@ export default function Header({ isLoggedIn }: { isLoggedIn: boolean }) {
           <span className="font-bold text-lg tracking-tight select-none">
             빅리지지
           </span>
-        </div>
+        </Link>
+        {usePathname() !== "/" && (
+          <div className="flex-1 flex justify-center">
+            <SearchBox variant="header" />
+          </div>
+        )}
         <div className="flex items-center">
           <button
             onClick={toggleTheme}
