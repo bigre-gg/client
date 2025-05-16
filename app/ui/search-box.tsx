@@ -180,9 +180,9 @@ export default function SearchBox() {
       style={{
         position: "absolute",
         left: "50%",
-        top: "50%",
+        top: "35%",
         transform: "translate(-50%, -50%)",
-        width: 600,
+        width: 500,
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
@@ -197,8 +197,7 @@ export default function SearchBox() {
           onFocus={handleInputFocus}
           onBlur={handleInputBlur}
           placeholder="아이템 검색"
-          className="w-full p-3 text-lg rounded bg-lightBg dark:bg-darkBg text-darkBg dark:text-lightBg mb-2 focus:outline-none focus:ring-2 focus:ring-zinc-300 dark:focus:ring-zinc-700 focus:ring-offset-0 transition-all"
-          autoFocus
+          className="w-full p-2 text-base rounded bg-lightBg dark:bg-darkBg text-darkBg dark:text-lightBg mb-2 focus:outline-none focus:ring-2 focus:ring-zinc-300 dark:focus:ring-zinc-700 focus:ring-offset-0 transition-all"
         />
         {/* 최근검색/즐겨찾기 패널 */}
         {showRecentAndFavorite && (

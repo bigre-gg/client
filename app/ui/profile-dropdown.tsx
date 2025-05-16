@@ -26,7 +26,7 @@ export default function ProfileDropdown() {
         onClick={() => setOpen((v) => !v)}
       >
         {/* 임시 디스코드 아이콘 */}
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
           <circle cx="12" cy="12" r="12" fill="#5865F2" />
           <path
             d="M17.5 17c-1.2-1-2.3-1-3.5-1s-2.3 0-3.5 1"
