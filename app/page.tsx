@@ -9,9 +9,9 @@ export default function Page() {
       <Image
         src="/logo.png"
         width={200}
-        height={80}
+        height={100}
         alt="로고"
-        className="mx-auto mb-6"
+        className="mx-auto mt-12 mb-6"
       />
       <SearchBox />
     </main>

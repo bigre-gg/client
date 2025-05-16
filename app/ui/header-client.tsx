@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { SunIcon, MoonIcon } from "@heroicons/react/24/solid";
 import ProfileDropdown from "./profile-dropdown";
+import Image from "next/image";
 
 export default function Header({ isLoggedIn }: { isLoggedIn: boolean }) {
   const [isDark, setIsDark] = useState(false);
@@ -26,29 +27,48 @@ export default function Header({ isLoggedIn }: { isLoggedIn: boolean }) {
   };
 
   return (
-    <header className="w-full flex justify-center items-center h-16 bg-lightBg dark:bg-darkBg text-darkBg dark:text-lightBg">
-      <div className="w-full max-w-6xl flex justify-end items-center px-6">
-        <button
-          onClick={toggleTheme}
-          onMouseDown={(e) => e.preventDefault()}
-          aria-label="다크/라이트 모드 토글"
-          className="mr-4 p-2 rounded-full border border-gray-400 dark:border-gray-700 bg-lightBg dark:bg-darkBg hover:bg-gray-200 dark:hover:bg-gray-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-        >
-          {isDark ? (
-            <SunIcon className="w-6 h-6 text-yellow-400" />
+    <header className="w-full flex flex-col items-center h-16 bg-lightBg dark:bg-darkBg text-darkBg dark:text-lightBg border-b border-zinc-400 dark:border-zinc-700">
+      <div className="w-full max-w-6xl flex justify-between items-center px-6 h-full">
+        <div className="flex items-center gap-2">
+          <Image
+            src="/logo.png"
+            alt="로고"
+            width={36}
+            height={36}
+            className="object-contain"
+          />
+          <span className="font-bold text-lg tracking-tight select-none">
+            빅리지지
+          </span>
+        </div>
+        <div className="flex items-center">
+          <button
+            onClick={toggleTheme}
+            onMouseDown={(e) => e.preventDefault()}
+            aria-label="다크/라이트 모드 토글"
+            className="mr-4 p-2 rounded-full border border-gray-400 dark:border-gray-700 bg-lightBg dark:bg-darkBg hover:bg-gray-200 dark:hover:bg-gray-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+          >
+            {isDark ? (
+              <SunIcon className="w-5 h-5 text-yellow-400" />
+            ) : (
+              <MoonIcon className="w-5 h-5 text-gray-700" />
+            )}
+          </button>
+          {!isLoggedIn ? (
+            <a href="/api/auth/discord">
+              <button className="flex items-center gap-2 px-3 py-1.5 rounded-lg transition bg-[#5865f2] hover:bg-[#4752C4] h-8">
+                <img
+                  src="/discord-logo.png"
+                  alt="Discord Logo"
+                  className="object-contain w-auto h-5"
+                />
+                <span className="text-white text-sm">로그인</span>
+              </button>
+            </a>
           ) : (
-            <MoonIcon className="w-6 h-6 text-gray-700" />
+            <ProfileDropdown />
           )}
-        </button>
-        {!isLoggedIn ? (
-          <a href="/api/auth/discord">
-            <button className="bg-blue-500 px-4 py-2 rounded hover:bg-blue-600 transition">
-              로그인
-            </button>
-          </a>
-        ) : (
-          <ProfileDropdown />
-        )}
+        </div>
       </div>
     </header>
   );
