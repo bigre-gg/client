@@ -9,6 +9,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <title>빅리지지 | 빅뱅리턴즈.GG</title>
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -23,6 +24,7 @@ export default function RootLayout({
             `,
           }}
         />
+        <link rel="icon" href="/favicon.png" />
       </head>
       <body className="text-darkBg dark:text-lightBg">
         <Header />

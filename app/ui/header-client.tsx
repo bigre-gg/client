@@ -31,11 +31,11 @@ export default function Header({ isLoggedIn }: { isLoggedIn: boolean }) {
       <div className="w-full max-w-6xl flex justify-between items-center px-6 h-full">
         <div className="flex items-center gap-2">
           <Image
-            src="/logo.png"
+            src="/favicon.png"
             alt="로고"
             width={36}
             height={36}
-            className="object-contain"
+            className="object-scale-down w-auto h-8"
           />
           <span className="font-bold text-lg tracking-tight select-none">
             빅리지지
