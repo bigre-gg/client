@@ -2,11 +2,7 @@ import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import fs from "fs";
 import path from "path";
-
-interface Item {
-  id: number;
-  name: string;
-}
+import ItemDetailBody from "@/app/ui/item-detail-body";
 
 export default async function ItemDetail({
   params,
@@ -16,22 +12,21 @@ export default async function ItemDetail({
   // public 폴더의 items.json을 읽음
   const filePath = path.join(process.cwd(), "public", "items.json");
   const data = fs.readFileSync(filePath, "utf-8");
-  const items: Item[] = JSON.parse(data);
+  const items: any[] = JSON.parse(data);
   const item = items.find((i) => i.id === Number(params.id));
   if (!item) return notFound();
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white">
-      <h1 className="text-3xl font-bold mb-4">{item.name}</h1>
-      <p className="text-lg">아이템 ID: {item.id}</p>
+    <div className="flex flex-row" style={{ minHeight: 400 }}>
+      <div style={{ minWidth: 320, maxWidth: 320 }}>
+        <ItemDetailBody item={item} cardSize={320} />
+      </div>
+      <div className="flex-1" />
     </div>
   );
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: { id: string };
-}): Promise<Metadata> {
+export async function generateMetadata(props: any): Promise<Metadata> {
+  const { params } = await props;
   const fs = require("fs");
   const path = require("path");
   const filePath = path.join(process.cwd(), "public", "items.json");

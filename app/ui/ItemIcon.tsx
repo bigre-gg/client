@@ -3,15 +3,17 @@
 export default function ItemIcon({
   id,
   size = 32,
+  disableDarkBg = false,
 }: {
   id: number;
   size?: number;
+  disableDarkBg?: boolean;
 }) {
   // 클라이언트에서 직접 외부 이미지 서버로 요청
   const src = `https://maplestory.io/api/gms/123/item/${id}/icon`;
   return (
     <div
-      className="bg-lightBg dark:bg-darkBg"
+      className={disableDarkBg ? "bg-lightBg" : "bg-lightBg dark:bg-darkBg"}
       style={{
         width: size,
         height: size,
