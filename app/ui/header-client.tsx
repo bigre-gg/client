@@ -78,7 +78,7 @@ export default function Header({ isLoggedIn }: { isLoggedIn: boolean }) {
               </button>
             </a>
           ) : (
-            <ProfileDropdown />
+            <ProfileDropdown buttonClassName="flex items-center gap-2 px-3 py-1.5 rounded-lg transition bg-[#5865f2] hover:bg-[#4752C4] h-8" />
           )}
         </div>
       </div>
