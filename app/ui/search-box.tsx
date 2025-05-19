@@ -217,7 +217,7 @@ export default function SearchBox({ variant = "main" }: SearchBoxProps) {
         {showRecentAndFavorite && (
           <div
             className={
-              "absolute left-0 right-0 z-10 flex gap-4 bg-transparent transition-all duration-300 " +
+              "absolute left-0 right-0 z-50 flex gap-4 bg-transparent transition-all duration-300 " +
               (showRecentAndFavorite
                 ? "opacity-100 translate-y-0 pointer-events-auto"
                 : "opacity-0 translate-y-2 pointer-events-none")
@@ -266,7 +266,7 @@ export default function SearchBox({ variant = "main" }: SearchBoxProps) {
         {showResults && (
           <div
             className={
-              "absolute left-0 right-0 z-10 bg-lightBg dark:bg-darkBg text-darkBg dark:text-lightBg rounded max-h-72 overflow-y-auto shadow-lg w-full transition-all duration-300 border border-zinc-300 dark:border-zinc-700 " +
+              "absolute left-0 right-0 z-50 bg-lightBg dark:bg-darkBg text-darkBg dark:text-lightBg rounded max-h-72 overflow-y-auto shadow-lg w-full transition-all duration-300 border border-zinc-300 dark:border-zinc-700 " +
               (showResults
                 ? "opacity-100 translate-y-0 pointer-events-auto"
                 : "opacity-0 translate-y-2 pointer-events-none")

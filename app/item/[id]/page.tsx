@@ -1,48 +1,72 @@
-import { notFound } from "next/navigation";
-import { Metadata } from "next";
+"use client";
+
+import { useState, useEffect } from "react";
 import ItemDetailBody from "@/app/ui/item-detail-body";
-import { getItemById } from "@/lib/items";
+import ItemFilter from "@/app/ui/item-filter";
+import { getItemById, ItemApiResponse } from "@/lib/items";
 
-// 사이트 기본 URL (클라이언트와 서버 컴포넌트 모두에서 사용)
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+export default function ItemDetail({ params }: { params: { id: string } }) {
+  const itemId = params.id;
 
-export default async function ItemDetail({
-  params,
-}: {
-  params: { id: string };
-}) {
-  try {
-    // 공통 유틸리티 함수를 사용하여 직접 백엔드 API에서 아이템 정보 가져오기
-    const item = await getItemById(params.id);
+  const [item, setItem] = useState<ItemApiResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+  const [filters, setFilters] = useState({});
 
-    return (
-      <div className="flex flex-row" style={{ minHeight: 400 }}>
-        <div style={{ minWidth: 300, maxWidth: 300 }}>
-          <ItemDetailBody item={item} cardSize={300} />
-        </div>
-        <div className="flex-1" />
-      </div>
-    );
-  } catch (error) {
-    console.error("Error fetching item:", error);
-    return notFound();
-  }
-}
-
-export async function generateMetadata(props: any): Promise<Metadata> {
-  try {
-    // props를 await하고 params를 안전하게 추출
-    const { params } = await props;
-    const itemId = params.id;
-
-    // 공통 유틸리티 함수를 사용하여 직접 백엔드 API에서 아이템 정보 가져오기
-    const item = await getItemById(itemId);
-
-    return {
-      title: `${item.name} | 빅뱅리턴즈.GG`,
+  // 아이템 데이터 가져오기
+  useEffect(() => {
+    const fetchItemData = async () => {
+      try {
+        const data = await getItemById(itemId);
+        setItem(data);
+      } catch (err) {
+        setError(err as Error);
+        console.error("Error fetching item:", err);
+      } finally {
+        setLoading(false);
+      }
     };
-  } catch (error) {
-    console.error("Error fetching item for metadata:", error);
-    return { title: "아이템 없음 | 빅뱅리턴즈.GG" };
+
+    fetchItemData();
+  }, [itemId]);
+
+  // 필터 상태 업데이트
+  const handleFilterChange = (newFilters: any) => {
+    setFilters(newFilters);
+    console.log("New filters:", newFilters);
+    // 여기서 필터링된 아이템을 가져오는 API 호출 등을 구현할 수 있습니다.
+  };
+
+  if (loading) {
+    return <div className="p-4">아이템 정보를 불러오는 중...</div>;
   }
+
+  if (error || !item) {
+    return <div className="p-4">아이템을 찾을 수 없습니다.</div>;
+  }
+
+  return (
+    <div className="w-full flex flex-row gap-4 p-4">
+      {/* 왼쪽: 아이템 상세 정보 */}
+      <div
+        className="flex-none bg-gray-100 dark:bg-zinc-800 rounded-lg p-4"
+        style={{ width: 320 }}
+      >
+        <ItemDetailBody item={item} cardSize={300} />
+        <div className="mt-4"></div>
+      </div>
+
+      {/* 오른쪽: 필터 */}
+      <div className="flex-1 min-w-0 bg-gray-100 dark:bg-zinc-800 rounded-lg flex justify-start items-start">
+        <div className="relative w-full h-full">
+          <div className="absolute inset-0 bg-gray-100 dark:bg-zinc-800 rounded-lg" />
+          <div className="relative z-10 flex justify-start items-start">
+            <div className="w-full">
+              <ItemFilter item={item} onFilterChange={handleFilterChange} />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
