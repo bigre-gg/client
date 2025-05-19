@@ -30,7 +30,7 @@ export default function Header({ isLoggedIn }: { isLoggedIn: boolean }) {
   };
 
   return (
-    <header className="w-full flex flex-col items-center h-16 bg-lightBg dark:bg-darkBg text-darkBg dark:text-lightBg border-b border-zinc-400 dark:border-zinc-700">
+    <header className="w-full flex flex-col items-center h-16 bg-lightBg dark:bg-darkBg text-darkBg dark:text-lightBg border-b border-zinc-400 dark:border-zinc-700 z-50">
       <div className="w-full max-w-6xl flex justify-between items-center px-6 h-full">
         <Link
           href="/"
