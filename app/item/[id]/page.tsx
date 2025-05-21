@@ -3,67 +3,89 @@
 import { useState, useEffect } from "react";
 import ItemDetailBody from "@/app/ui/item-detail-body";
 import ItemFilter from "@/app/ui/item-filter";
-import { getItemById, ItemApiResponse } from "@/lib/items";
+import { getItemById } from "@/lib/items";
+import { useRouter } from "next/navigation";
+import NonEquipItemDetail from "@/app/ui/NonEquipItemDetail";
+import items from "@/public/items.json";
 
 export default function ItemDetail({ params }: { params: { id: string } }) {
-  const itemId = params.id;
+  const itemId = Number(params.id);
 
-  const [item, setItem] = useState<ItemApiResponse | null>(null);
+  // itemId로 isEquip, name 등 찾기
+  const itemMeta = items.find((i: any) => i.id === itemId);
+
+  const [item, setItem] = useState<any>(null);
+  const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+  const [descLoading, setDescLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState({});
 
-  // 아이템 데이터 가져오기
-  useEffect(() => {
-    const fetchItemData = async () => {
-      try {
-        const data = await getItemById(itemId);
-        setItem(data);
-      } catch (err) {
-        setError(err as Error);
-        console.error("Error fetching item:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const router = useRouter();
 
-    fetchItemData();
+  useEffect(() => {
+    if (!itemMeta) {
+      setError("아이템 정보를 찾을 수 없습니다.");
+      setLoading(false);
+      return;
+    }
+
+    if (itemMeta.isEquip) {
+      // 장비 아이템: getItemById 호출
+      setLoading(true);
+      getItemById(String(itemId))
+        .then((data) => setItem(data))
+        .catch(() => setError("장비 정보를 불러오지 못했습니다."))
+        .finally(() => setLoading(false));
+    } else {
+      // 비장비 아이템: 외부 API만 호출
+      setDescLoading(true);
+      fetch(`https://maplestory.io/api/kms/300/item/${itemId}`)
+        .then((res) => res.json())
+        .then((data) => setDescription(data?.description?.description || ""))
+        .catch(() => setError("설명 정보를 불러오지 못했습니다."))
+        .finally(() => {
+          setDescLoading(false);
+          setLoading(false);
+        });
+    }
   }, [itemId]);
 
-  // 필터 상태 업데이트
   const handleFilterChange = (newFilters: any) => {
     setFilters(newFilters);
-    console.log("New filters:", newFilters);
-    // 여기서 필터링된 아이템을 가져오는 API 호출 등을 구현할 수 있습니다.
+    // 필터링된 아이템을 가져오는 API 호출 등을 구현할 수 있습니다.
   };
 
-  if (loading) {
-    return <div className="p-4">아이템 정보를 불러오는 중...</div>;
-  }
-
-  if (error || !item) {
-    return <div className="p-4">아이템을 찾을 수 없습니다.</div>;
-  }
+  if (loading) return <div className="p-4">아이템 정보를 불러오는 중...</div>;
+  if (error) return <div className="p-4">{error}</div>;
+  if (!itemMeta) return <div className="p-4">아이템을 찾을 수 없습니다.</div>;
 
   return (
-    <div className="w-full flex flex-row gap-4 p-4">
-      {/* 왼쪽: 아이템 상세 정보 */}
-      <div
-        className="flex-none bg-gray-100 dark:bg-zinc-800 rounded-lg p-4"
-        style={{ width: 320 }}
-      >
-        <ItemDetailBody item={item} cardSize={300} />
-        <div className="mt-4"></div>
-      </div>
-
-      {/* 오른쪽: 필터 */}
-      <div className="flex-1 min-w-0 bg-gray-100 dark:bg-zinc-800 rounded-lg flex justify-start items-start">
-        <div className="relative w-full h-full">
-          <div className="absolute inset-0 bg-gray-100 dark:bg-zinc-800 rounded-lg" />
-          <div className="relative z-10 flex justify-start items-start">
-            <div className="w-full">
-              <ItemFilter item={item} onFilterChange={handleFilterChange} />
-            </div>
+    <div className="w-full">
+      <div className="w-full" style={{ minHeight: 400 }}>
+        <div className="relative w-full p-4">
+          <button
+            className="absolute right-4 top-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition w-full sm:w-auto sm:min-w-[140px]"
+            onClick={() => router.push(`/item/${itemId}/register`)}
+            style={{ zIndex: 10 }}
+          >
+            아이템 등록
+          </button>
+          <div className="flex flex-col gap-4 items-start">
+            {itemMeta.isEquip ? (
+              item ? (
+                <ItemDetailBody item={item} />
+              ) : null
+            ) : descLoading ? (
+              <div className="p-4">설명 정보를 불러오는 중...</div>
+            ) : (
+              <NonEquipItemDetail
+                itemId={itemId}
+                name={itemMeta.name}
+                description={description}
+              />
+            )}
+            <ItemFilter item={item} onFilterChange={handleFilterChange} />
           </div>
         </div>
       </div>

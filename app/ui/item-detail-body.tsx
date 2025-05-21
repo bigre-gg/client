@@ -110,13 +110,12 @@ export default function ItemDetailBody({
 
   return (
     <div
-      className="flex flex-col p-3"
+      className="flex flex-col p-3 w-full sm:w-[300px]"
       style={{
         background: "#1d668d",
         color: "white",
-        width: cardSize,
-        maxWidth: cardSize,
-        minHeight: cardSize * 0.95,
+        maxWidth: 300,
+        minHeight: 285,
         fontFamily: "Dotum, 돋움, 'Apple SD Gothic Neo', sans-serif",
         border: "2px solid #fff",
         boxShadow: "0 0 0 4px transparent, 0 0 0 6px #3a8ecb",
