@@ -188,14 +188,16 @@ export default function SearchBox({ variant = "main" }: SearchBoxProps) {
               left: "50%",
               top: "35%",
               transform: "translate(-50%, -50%)",
-              width: 500,
+              width: "100%",
+              maxWidth: 500,
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
             }
           : {
               position: "static",
-              width: 500,
+              width: "100%",
+              maxWidth: 500,
               display: "flex",
               flexDirection: "column",
               alignItems: "center",

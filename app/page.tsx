@@ -5,7 +5,7 @@ import Image from "next/image";
 
 export default function Page() {
   return (
-    <main className="relative min-h-screen bg-lightBg dark:bg-darkBg text-darkBg dark:text-lightBg">
+    <main className="relative min-h-screen w-full bg-lightBg dark:bg-darkBg text-darkBg dark:text-lightBg">
       <Image
         src="/logo.png"
         width={200}
