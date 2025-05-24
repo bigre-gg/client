@@ -110,11 +110,11 @@ export default function ItemDetailBody({
 
   return (
     <div
-      className="flex flex-col p-3 w-full sm:w-[300px]"
+      className="flex flex-col p-3 w-full sm:w-[320px]"
       style={{
         background: "#1d668d",
         color: "white",
-        maxWidth: 300,
+        maxWidth: 320,
         minHeight: 285,
         fontFamily: "Dotum, 돋움, 'Apple SD Gothic Neo', sans-serif",
         border: "2px solid #fff",
@@ -133,7 +133,7 @@ export default function ItemDetailBody({
         </div>
         {/* 요구 능력치 */}
         <div
-          className="flex flex-col gap-0 text-xs"
+          className="flex flex-col gap-0 text-xs items-center justify-center text-center"
           style={{
             lineHeight: 1.15,
             fontSize: "12.5px",
@@ -189,12 +189,20 @@ export default function ItemDetailBody({
           <span style={{ color: "#fff" }}>장비분류 : </span>
           <span>{item.subCategory}</span>
         </div>
-        {displayOptions.map((opt) => (
-          <div key={opt.name}>
-            <span style={{ color: "#fff" }}>{opt.name} : </span>
-            <span>{opt.value}</span>
-          </div>
-        ))}
+        {displayOptions.map((opt, i) => {
+          // 옵션 키가 P로 끝나면 %를 붙임
+          const key = Object.keys(item.options || {})[i] || "";
+          const isPercent = key.endsWith("P");
+          return (
+            <div key={opt.name}>
+              <span style={{ color: "#fff" }}>{opt.name} : </span>
+              <span>
+                {opt.value}
+                {isPercent ? "%" : ""}
+              </span>
+            </div>
+          );
+        })}
         <div>
           <span style={{ color: "#fff" }}>업그레이드 가능 횟수 : </span>
           <span>{item.tuc}</span>
