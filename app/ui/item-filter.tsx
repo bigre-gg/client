@@ -19,36 +19,37 @@ const optionMap: { [key: string]: string } = {
 };
 
 // 잠재 옵션 리스트 (영어 변수명: 한글)
-const potentialOptionMap: { [key: string]: string } = {
-  potentialStrP: "STR +X%",
-  potentialDexP: "DEX +X%",
-  potentialIntP: "INT +X%",
-  potentialLukP: "LUK +X%",
-  potentialHpP: "HP +X%",
-  potentialMpP: "MP +X%",
-  potentialAllStatP: "올스탯 +X%",
-  potentialPadP: "공격력 +X%",
-  potentialMadP: "마력 +X%",
-  potentialBossDmgP: "보스 몬스터 공격 시 데미지 +X%",
-  potentialIedP: "몬스터 방어율 무시 +X%",
-  potentialCritRateP: "크리티컬 확률 +X%",
-  potentialCritDmgP: "크리티컬 데미지 +X%",
-  potentialNormDmgP: "일반 몬스터 공격 시 데미지 +X%",
-  potentialDmgP: "데미지 +X%",
-  potentialPdd: "물리 방어력 +X",
-  potentialMdd: "마법 방어력 +X",
-  potentialSpeed: "이동속도 +X",
-  potentialJump: "점프력 +X",
-  potentialStatusResist: "상태 이상 저항 +X",
-  potentialAllSkill: "모든 스킬 레벨 +1",
-  potentialInvincible: "적중 시 일정 확률로 무적 상태",
-  potentialDropRate: "아이템 드롭률 +X%",
-  potentialMesoRate: "메소 획득량 +X%",
-  potentialHpHeal: "공격 시 일정 확률로 HP 회복",
-  potentialMpHeal: "공격 시 일정 확률로 MP 회복",
-  potentialCooldown: "스킬 쿨타임 감소",
-  potentialBuff: "버프 지속 시간 증가",
-  potentialSkillEffect: "스킬 사용 시 일정 확률로 추가 효과 발동",
+const potentialOptionMap: Record<string, string> = {
+  str: "STR",
+  dex: "DEX",
+  int: "INT",
+  luk: "LUK",
+  strP: "STR",
+  dexP: "DEX",
+  intP: "INT",
+  lukP: "LUK",
+  allStatP: "올스탯",
+  pad: "공격력",
+  padP: "공격력",
+  mad: "마력",
+  madP: "마력",
+  hp: "HP",
+  hpP: "HP",
+  mp: "MP",
+  mpP: "MP",
+  pdd: "물리 방어력",
+  mdd: "마법 방어력",
+  acc: "명중치",
+  eva: "회피치",
+  bossDmgP: "보스 몬스터 공격 시 데미지 증가",
+  critRateP: "크리티컬 확률 증가",
+  dmgP: "총 데미지",
+  iedP: "몬스터 방어율 무시",
+  invincSec: "피격 후 무적 시간 증가",
+  healEffP: "HP 회복 아이템/스킬 효율",
+  allResistP: "모든 속성 내성",
+  dropRateP: "아이템/메소 획득 확률",
+  mpReduceP: "모든 스킬의 MP 소모",
 };
 
 function SimpleNumberInput({
@@ -228,11 +229,11 @@ export default function ItemFilter({
     }
     return (
       <div
-        className="w-full sm:w-[300px] border border-gray-300 dark:border-zinc-700 rounded min-h-full"
+        className="w-full sm:w-[320px] border border-gray-300 dark:border-zinc-700 rounded min-h-full"
         style={{
           fontFamily:
             "Apple SD Gothic Neo, Noto Sans KR, Malgun Gothic, 돋움, Dotum, Arial, sans-serif",
-          maxWidth: 300,
+          maxWidth: 320,
         }}
       >
         <div className="sm:p-2 md:p-3 w-full">
@@ -421,11 +422,11 @@ export default function ItemFilter({
 
   return (
     <div
-      className="w-full sm:w-[300px] border border-gray-300 dark:border-zinc-700 rounded min-h-full"
+      className="w-full sm:w-[320px] border border-gray-300 dark:border-zinc-700 rounded min-h-full"
       style={{
         fontFamily:
           "Apple SD Gothic Neo, Noto Sans KR, Malgun Gothic, 돋움, Dotum, Arial, sans-serif",
-        maxWidth: 300,
+        maxWidth: 320,
       }}
     >
       <div className="sm:p-2 md:p-3 w-full">
@@ -506,7 +507,8 @@ export default function ItemFilter({
                             className="block w-full text-left px-3 py-1 hover:bg-blue-100 dark:hover:bg-zinc-700 text-gray-900 dark:text-gray-100"
                             onClick={() => handleAddPotentialOption(key)}
                           >
-                            {potentialOptionMap[key]}
+                            {potentialOptionMap[key] +
+                              (key.endsWith("P") ? " %" : "")}
                           </button>
                         ))
                       )}
@@ -548,7 +550,7 @@ export default function ItemFilter({
             {addedPotentialKeys.map((key) => (
               <div key={key}>
                 {renderFilterBlock(
-                  potentialOptionMap[key],
+                  potentialOptionMap[key] + (key.endsWith("P") ? " %" : ""),
                   key + "Min",
                   key + "Max",
                   <button
