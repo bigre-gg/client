@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { useParams } from "next/navigation";
 import ItemDetailBody from "@/app/ui/item-detail-body";
 import ItemFilter from "@/app/ui/item-filter";
 import { getItemById } from "@/lib/items";
@@ -10,11 +11,15 @@ import items from "@/public/items.json";
 import ItemIcon from "@/app/ui/ItemIcon";
 import TradeListPanel from "@/app/ui/TradeListPanel";
 
-export default function ItemDetail({ params }: { params: { id: string } }) {
+export default function ItemDetail() {
+  const params = useParams<{ id: string }>();
   const itemId = Number(params.id);
 
-  // itemId로 isEquip, name 등 찾기
-  const itemMeta = items.find((i: any) => i.id === itemId);
+  // itemId로 isEquip, name 등 찾기 (useMemo로 id 변경 시마다 갱신)
+  const itemMeta = useMemo(
+    () => items.find((i: any) => i.id === itemId),
+    [itemId]
+  );
 
   const [item, setItem] = useState<any>(null);
   const [description, setDescription] = useState("");
@@ -29,33 +34,37 @@ export default function ItemDetail({ params }: { params: { id: string } }) {
 
   const router = useRouter();
 
+  // itemId가 바뀔 때마다 상태 초기화
+  useEffect(() => {
+    setItem(null);
+    setDescription("");
+    setError(null);
+    setLoading(true);
+    setDescLoading(false);
+    setFilters({});
+    setTrades([]);
+    setShowPendingOnly(true);
+    setSortType("latest");
+    setTradeFilter(null);
+  }, [itemId]);
+
   useEffect(() => {
     if (!itemMeta) {
       setError("아이템 정보를 찾을 수 없습니다.");
       setLoading(false);
       return;
     }
-
-    if (itemMeta.isEquip) {
-      // 장비 아이템: getItemById 호출
-      setLoading(true);
-      getItemById(String(itemId))
-        .then((data) => setItem(data))
-        .catch(() => setError("장비 정보를 불러오지 못했습니다."))
-        .finally(() => setLoading(false));
-    } else {
-      // 비장비 아이템: 외부 API만 호출
-      setDescLoading(true);
-      fetch(`https://maplestory.io/api/kms/300/item/${itemId}`)
-        .then((res) => res.json())
-        .then((data) => setDescription(data?.description?.description || ""))
-        .catch(() => setError("설명 정보를 불러오지 못했습니다."))
-        .finally(() => {
-          setDescLoading(false);
-          setLoading(false);
-        });
-    }
-  }, [itemId]);
+    setLoading(true);
+    getItemById(String(itemId))
+      .then((data) => {
+        if (!data || typeof data !== "object")
+          throw new Error("아이템 데이터가 없습니다.");
+        setItem(data);
+        setDescription((data as any)?.description || "");
+      })
+      .catch((e) => setError("아이템 정보를 불러오지 못했습니다."))
+      .finally(() => setLoading(false));
+  }, [itemId, itemMeta]);
 
   // trade 데이터 불러오기
   useEffect(() => {
@@ -143,25 +152,26 @@ export default function ItemDetail({ params }: { params: { id: string } }) {
   if (!itemMeta) return <div className="p-4">아이템을 찾을 수 없습니다.</div>;
 
   return (
-    <div className="w-full flex flex-col items-center px-2 sm:px-0">
+    <div
+      key={itemId}
+      className="w-full flex flex-col items-center px-2 sm:px-0"
+    >
       <div className="w-full flex flex-col items-center min-h-[400px]">
         <div className="relative w-full flex flex-col items-center p-2 sm:p-4">
           <div className="flex flex-col sm:flex-row gap-4 sm:gap-8 w-full max-w-full sm:max-w-5xl justify-center items-start mt-2 sm:mt-4">
             {/* 아이템 디테일 */}
             <div className="flex-shrink-0 w-full sm:w-auto mb-4 sm:mb-0">
-              {itemMeta.isEquip ? (
-                item ? (
+              {item ? (
+                item.type === "OTHERS" ? (
+                  <NonEquipItemDetail
+                    itemId={item.itemId}
+                    name={item.name}
+                    description={item.description}
+                  />
+                ) : (
                   <ItemDetailBody item={item} />
-                ) : null
-              ) : descLoading ? (
-                <div className="p-4">설명 정보를 불러오는 중...</div>
-              ) : (
-                <NonEquipItemDetail
-                  itemId={itemId}
-                  name={itemMeta.name}
-                  description={description}
-                />
-              )}
+                )
+              ) : null}
               <div className="mt-3 sm:mt-5">
                 <ItemFilter
                   item={item}

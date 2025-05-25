@@ -29,6 +29,21 @@ export const OPTION_TRANSLATIONS: Record<string, string> = {
   incMMP: "최대 MP",
 };
 
+// 코인 문자열 파싱 함수
+function parseCoinString(coinStr?: string) {
+  if (!coinStr) return { g: 0, s: 0, b: 0 };
+  const match = coinStr.match(/(\d+)g(\d+)s(\d+)b/);
+  if (!match) return { g: 0, s: 0, b: 0 };
+  return { g: Number(match[1]), s: Number(match[2]), b: Number(match[3]) };
+}
+
+// 코인 표시 여부 함수
+function shouldShowCoin(coinStr?: string) {
+  if (!coinStr) return false;
+  const { g, s, b } = parseCoinString(coinStr);
+  return g > 0 || s > 0 || b > 0;
+}
+
 export default function TradeListPanel({
   itemId,
   itemMeta,
@@ -298,12 +313,60 @@ export default function TradeListPanel({
                     {itemMeta.name}
                   </span>
                   <span className="font-semibold text-[13px] flex items-center gap-1 leading-tight text-black dark:text-white">
-                    {trade.itemPrice.toLocaleString()}
-                    <img
-                      src="/meso.png"
-                      alt="메소"
-                      style={{ width: 16, height: 16, display: "inline-block" }}
-                    />
+                    <span className="flex items-center gap-1">
+                      {trade.itemPrice.toLocaleString()}
+                      <img
+                        src="/meso.png"
+                        alt="메소"
+                        style={{
+                          width: 16,
+                          height: 16,
+                          display: "inline-block",
+                        }}
+                      />
+                    </span>
+                    {shouldShowCoin(trade.coin) && (
+                      <span className="flex items-center gap-1">
+                        <span className="text-gray-500 font-bold">or</span>
+                        {(() => {
+                          const { g, s, b } = parseCoinString(trade.coin);
+                          return (
+                            <span className="flex items-center gap-1">
+                              {g > 0 && (
+                                <>
+                                  <img
+                                    src="/goldCoin.png"
+                                    alt="Gold"
+                                    className="w-4 h-4 inline-block"
+                                  />
+                                  {g}
+                                </>
+                              )}
+                              {s > 0 && (
+                                <>
+                                  <img
+                                    src="/silverCoin.png"
+                                    alt="Silver"
+                                    className="w-4 h-4 inline-block"
+                                  />
+                                  {s}
+                                </>
+                              )}
+                              {b > 0 && (
+                                <>
+                                  <img
+                                    src="/bronzeCoin.png"
+                                    alt="Bronze"
+                                    className="w-4 h-4 inline-block"
+                                  />
+                                  {b}
+                                </>
+                              )}
+                            </span>
+                          );
+                        })()}
+                      </span>
+                    )}
                   </span>
                   <span className="text-xs text-gray-500 dark:text-gray-300">
                     {trade.count ? `${trade.count}개` : "1개"}
@@ -328,39 +391,42 @@ export default function TradeListPanel({
                 </div>
               </div>
               <div className="flex flex-wrap gap-0.5 mt-0 group">
-                {getOptionTags(baseItem, trade).map(
-                  (tag: string, idx: number) => (
-                    <span
-                      key={idx}
-                      className="bg-blue-600 dark:bg-blue-700 text-white text-[11px] px-1.5 py-0.5 rounded"
-                    >
-                      {tag}
+                {(trade.itemType || baseItem.type) !== "OTHERS" && (
+                  <>
+                    {getOptionTags(baseItem, trade).map(
+                      (tag: string, idx: number) => (
+                        <span
+                          key={idx}
+                          className="bg-blue-600 dark:bg-blue-700 text-white text-[11px] px-1.5 py-0.5 rounded"
+                        >
+                          {tag}
+                        </span>
+                      )
+                    )}
+                    {getPotentialTags(trade).map((tag: string, idx: number) => (
+                      <span
+                        key={"potential-" + idx}
+                        className="bg-purple-600 dark:bg-purple-700 text-white text-[11px] px-1.5 py-0.5 rounded"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                    {getCustomTags(trade).map((tag: string, idx: number) => (
+                      <span
+                        key={"custom-" + idx}
+                        className="bg-purple-600 dark:bg-purple-700 text-white text-[11px] px-1.5 py-0.5 rounded"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                    <span className="bg-gray-300 dark:bg-gray-700 text-black dark:text-white text-[11px] px-1.5 py-0.5 rounded">
+                      {trade.upgradeCount} 작
                     </span>
-                  )
+                    <span className="bg-gray-300 dark:bg-gray-700 text-black dark:text-white text-[11px] px-1.5 py-0.5 rounded">
+                      업횟 {trade.tuc}
+                    </span>
+                  </>
                 )}
-                {getPotentialTags(trade).map((tag: string, idx: number) => (
-                  <span
-                    key={"potential-" + idx}
-                    className="bg-purple-600 dark:bg-purple-700 text-white text-[11px] px-1.5 py-0.5 rounded"
-                  >
-                    {tag}
-                  </span>
-                ))}
-                {getCustomTags(trade).map((tag: string, idx: number) => (
-                  <span
-                    key={"custom-" + idx}
-                    className="bg-purple-600 dark:bg-purple-700 text-white text-[11px] px-1.5 py-0.5 rounded"
-                  >
-                    {tag}
-                  </span>
-                ))}
-
-                <span className="bg-gray-300 dark:bg-gray-700 text-black dark:text-white text-[11px] px-1.5 py-0.5 rounded">
-                  업횟 {trade.upgradeCount}
-                </span>
-                <span className="bg-gray-300 dark:bg-gray-700 text-black dark:text-white text-[11px] px-1.5 py-0.5 rounded">
-                  {trade.tuc} 작
-                </span>
                 <span className="bg-gray-300 dark:bg-gray-700 text-black dark:text-white text-[11px] px-1.5 py-0.5 rounded">
                   {trade.tradeWorld}
                 </span>
@@ -413,12 +479,60 @@ export default function TradeListPanel({
                     {itemMeta.name}
                   </span>
                   <span className="font-semibold text-[13px] flex items-center gap-1 leading-tight text-black dark:text-white">
-                    {trade.itemPrice.toLocaleString()}
-                    <img
-                      src="/meso.png"
-                      alt="메소"
-                      style={{ width: 16, height: 16, display: "inline-block" }}
-                    />
+                    <span className="flex items-center gap-1">
+                      {trade.itemPrice.toLocaleString()}
+                      <img
+                        src="/meso.png"
+                        alt="메소"
+                        style={{
+                          width: 16,
+                          height: 16,
+                          display: "inline-block",
+                        }}
+                      />
+                    </span>
+                    {shouldShowCoin(trade.coin) && (
+                      <span className="flex items-center gap-1">
+                        <span className="text-gray-500 font-bold">or</span>
+                        {(() => {
+                          const { g, s, b } = parseCoinString(trade.coin);
+                          return (
+                            <span className="flex items-center gap-1">
+                              {g > 0 && (
+                                <>
+                                  <img
+                                    src="/goldCoin.png"
+                                    alt="Gold"
+                                    className="w-4 h-4 inline-block"
+                                  />
+                                  {g}
+                                </>
+                              )}
+                              {s > 0 && (
+                                <>
+                                  <img
+                                    src="/silverCoin.png"
+                                    alt="Silver"
+                                    className="w-4 h-4 inline-block"
+                                  />
+                                  {s}
+                                </>
+                              )}
+                              {b > 0 && (
+                                <>
+                                  <img
+                                    src="/bronzeCoin.png"
+                                    alt="Bronze"
+                                    className="w-4 h-4 inline-block"
+                                  />
+                                  {b}
+                                </>
+                              )}
+                            </span>
+                          );
+                        })()}
+                      </span>
+                    )}
                   </span>
                   <span className="text-xs text-gray-500 dark:text-gray-300">
                     {trade.count ? `${trade.count}개` : "1개"}
@@ -443,32 +557,42 @@ export default function TradeListPanel({
                 </div>
               </div>
               <div className="flex flex-wrap gap-0.5 mt-0 group">
-                {getOptionTags(baseItem, trade).map(
-                  (tag: string, idx: number) => (
-                    <span
-                      key={idx}
-                      className="bg-green-600 dark:bg-green-700 text-white text-[11px] px-1.5 py-0.5 rounded"
-                    >
-                      {tag}
+                {(trade.itemType || baseItem.type) !== "OTHERS" && (
+                  <>
+                    {getOptionTags(baseItem, trade).map(
+                      (tag: string, idx: number) => (
+                        <span
+                          key={idx}
+                          className="bg-blue-600 dark:bg-blue-700 text-white text-[11px] px-1.5 py-0.5 rounded"
+                        >
+                          {tag}
+                        </span>
+                      )
+                    )}
+                    {getPotentialTags(trade).map((tag: string, idx: number) => (
+                      <span
+                        key={"potential-" + idx}
+                        className="bg-purple-600 dark:bg-purple-700 text-white text-[11px] px-1.5 py-0.5 rounded"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                    {getCustomTags(trade).map((tag: string, idx: number) => (
+                      <span
+                        key={"custom-" + idx}
+                        className="bg-purple-600 dark:bg-purple-700 text-white text-[11px] px-1.5 py-0.5 rounded"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                    <span className="bg-gray-300 dark:bg-gray-700 text-black dark:text-white text-[11px] px-1.5 py-0.5 rounded">
+                      {trade.upgradeCount} 작
                     </span>
-                  )
+                    <span className="bg-gray-300 dark:bg-gray-700 text-black dark:text-white text-[11px] px-1.5 py-0.5 rounded">
+                      업횟 {trade.tuc}
+                    </span>
+                  </>
                 )}
-                {getPotentialTags(trade).map((tag: string, idx: number) => (
-                  <span
-                    key={"potential-" + idx}
-                    className="bg-purple-600 dark:bg-purple-700 text-white text-[11px] px-1.5 py-0.5 rounded"
-                  >
-                    {tag}
-                  </span>
-                ))}
-                {getCustomTags(trade).map((tag: string, idx: number) => (
-                  <span
-                    key={"custom-" + idx}
-                    className="bg-pink-600 dark:bg-pink-700 text-white text-[11px] px-1.5 py-0.5 rounded"
-                  >
-                    {tag}
-                  </span>
-                ))}
                 <span className="bg-gray-300 dark:bg-gray-700 text-black dark:text-white text-[11px] px-1.5 py-0.5 rounded">
                   월드: {trade.tradeWorld}
                 </span>
@@ -479,12 +603,6 @@ export default function TradeListPanel({
                     : trade.haggling === "IMPOSSIBLE"
                     ? "불가"
                     : "제안받음"}
-                </span>
-                <span className="bg-gray-300 dark:bg-gray-700 text-black dark:text-white text-[11px] px-1.5 py-0.5 rounded">
-                  {trade.upgradeCount}작
-                </span>
-                <span className="bg-gray-300 dark:bg-gray-700 text-black dark:text-white text-[11px] px-1.5 py-0.5 rounded">
-                  {trade.tuc} 업
                 </span>
                 {trade.comment && (
                   <span className="relative bg-gray-200 dark:bg-zinc-800 text-black dark:text-white text-[11px] px-1.5 py-0.5 rounded truncate max-w-[120px]">

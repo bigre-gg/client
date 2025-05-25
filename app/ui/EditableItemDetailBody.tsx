@@ -364,14 +364,14 @@ export default function EditableItemDetailBody({
   }, [potentialOptionsInput, setPotentialOptions]);
 
   return (
-    <>
+    <div className="flex flex-col items-center w-full">
       <div className="flex justify-center w-full">
         <div
           className="flex flex-col p-3 w-full sm:w-[300px] relative"
           style={{
             background: "#1d668d",
             color: "white",
-            maxWidth: 300,
+            maxWidth: 285,
             minHeight: 285,
             fontFamily: "Dotum, 돋움, 'Apple SD Gothic Neo', sans-serif",
             border: "2px solid #fff",
@@ -609,8 +609,8 @@ export default function EditableItemDetailBody({
           </div>
         </div>
       </div>
-      {/* 옵션/잠재옵션 + 버튼을 카드 밖에 배치 */}
-      <div className="flex flex-col items-center gap-2 mt-2">
+      {/* 옵션/잠재옵션 + 버튼을 카드(옵션 입력란) 아래로 이동 */}
+      <div className="flex flex-col items-center gap-2 mt-4 w-full">
         <div className="flex gap-6 justify-center">
           <div className="flex items-center relative">
             <span className="mr-2 text-sm text-gray-800 dark:text-gray-200">
@@ -752,6 +752,6 @@ export default function EditableItemDetailBody({
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }

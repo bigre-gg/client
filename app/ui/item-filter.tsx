@@ -156,21 +156,197 @@ export default function ItemFilter({
   onFilterChange: (filters: any) => void;
   onApply?: (filters: any) => void;
 }) {
-  // 장비 여부 분기
-  const isEquip = item && (item as any).isEquip !== false;
+  // OTHERS 여부
+  const isOthers = item && (item as any).type === "OTHERS";
 
-  // 비장비 아이템일 때는 가격 필터만 렌더링 (options 등 접근 X)
-  if (!isEquip) {
-    const [filters, setFilters] = useState<{
-      priceMin: string;
-      priceMax: string;
-    }>({
+  // 가격 필터 state (공통)
+  const [filters, setFilters] = useState<{ [key: string]: any }>(() => {
+    if (isOthers) {
+      return {
+        priceMin: "0",
+        priceMax: "1000000000",
+      };
+    }
+    // 장비 기본값
+    const base: any = {
       priceMin: "0",
       priceMax: "1000000000",
+      scrollMin: "0",
+      scrollMax: (item.tuc || 0).toString(),
+      tucMin: "0",
+      tucMax: (item.tuc || 0).toString(),
+    };
+    if (item.options) {
+      Object.keys(item.options).forEach((key) => {
+        const value = item.options?.[key] ?? 0;
+        base[key + "Min"] = value.toString();
+        base[key + "Max"] = value.toString();
+      });
+    }
+    return base;
+  });
+
+  // 나머지 장비용 state (OTHERS면 사용 안함)
+  const [addedOptionKeys, setAddedOptionKeys] = useState<string[]>([]);
+  const [showOptionList, setShowOptionList] = useState(false);
+  const [addedPotentialKeys, setAddedPotentialKeys] = useState<string[]>([]);
+  const [showPotentialList, setShowPotentialList] = useState(false);
+  const optionListRef = useRef<HTMLDivElement>(null);
+  const potentialListRef = useRef<HTMLDivElement>(null);
+
+  // useEffect: 필터 변경 시 부모에 알림
+  useEffect(() => {
+    onFilterChange(filters);
+  }, [filters, onFilterChange]);
+
+  // 필터 옵션 목록
+  const getIncOptions = () => {
+    if (!item.options) return Object.keys(optionMap);
+    return Object.keys(item.options).filter((key) => key.startsWith("inc"));
+  };
+
+  // 1. 아이템이 실제로 가진 옵션(incSTR 등)은 항상 필터로 표시, x(삭제) 불가
+  const itemOptionKeys = item.options
+    ? Object.keys(item.options).filter((k) => optionMap[k])
+    : [];
+  // 2. 추가로 사용자가 추가한 옵션(STR, DEX 등) 관리
+  const availableOptions = Object.keys(optionMap).filter(
+    (key) => !itemOptionKeys.includes(key) && !addedOptionKeys.includes(key)
+  );
+  // 4. 옵션 추가/제거 함수
+  function handleAddOption(key: string) {
+    // key가 STR, DEX 등일 수 있으므로 optionMap에서 역매핑
+    const realKey =
+      Object.keys(optionMap).find((k) => optionMap[k] === key) || key;
+    setAddedOptionKeys((prev) => [...prev, realKey]);
+    setFilters((f = {}) => ({
+      ...f,
+      [realKey + "Min"]: "0",
+      [realKey + "Max"]: "0",
+    }));
+    setShowOptionList(false);
+  }
+  function handleRemoveOption(key: string) {
+    setAddedOptionKeys((prev) => prev.filter((k) => k !== key));
+  }
+
+  // 잠재옵션도 일반 옵션과 동일하게 관리
+  const availablePotentialOptions = Object.keys(potentialOptionMap).filter(
+    (key) => !addedPotentialKeys.includes(key)
+  );
+  function handleAddPotentialOption(key: string) {
+    setAddedPotentialKeys((prev) => [...prev, key]);
+    setFilters((f = {}) => ({
+      ...f,
+      [key + "Min"]: "0",
+      [key + "Max"]: "100",
+    }));
+    setShowPotentialList(false);
+  }
+  function handleRemovePotentialOption(key: string) {
+    setAddedPotentialKeys((prev) => prev.filter((k) => k !== key));
+    setFilters((f = {}) => {
+      const newF = { ...f };
+      delete newF[key + "Min"];
+      delete newF[key + "Max"];
+      return newF;
     });
-    useEffect(() => {
-      onFilterChange(filters);
-    }, [filters, onFilterChange]);
+  }
+
+  // 필터 변경 시 부모에 알림
+  useEffect(() => {
+    onFilterChange(filters);
+  }, [filters, onFilterChange]);
+
+  // 필터 블록 (구분선 포함)
+  function renderFilterBlock(
+    label: React.ReactNode,
+    minKey: string,
+    maxKey: string,
+    rightElement?: React.ReactNode
+  ) {
+    const isPrice = minKey === "priceMin" && maxKey === "priceMax";
+    return (
+      <div className="mb-1 flex flex-col sm:flex-row items-center w-full">
+        <div className="flex-1 w-full">
+          <div className="flex flex-col sm:flex-row items-stretch gap-2 text-xs mb-1 text-gray-700 dark:text-gray-200 w-full">
+            <span className="w-full sm:w-20 min-w-0 text-left text-sm flex-shrink-0">
+              {label}
+            </span>
+            <div className="flex flex-row gap-1 w-full">
+              <div className="flex flex-col items-start w-full min-w-0">
+                <SimpleNumberInput
+                  value={filters[minKey] ?? ""}
+                  onChange={(v) =>
+                    setFilters((f = {}) => ({
+                      ...f,
+                      [minKey]: v,
+                    }))
+                  }
+                  ariaLabel={
+                    typeof label === "string" ? label + " 최소" : undefined
+                  }
+                />
+                {isPrice && (
+                  <div className="text-xs text-transparent mt-0.5 select-none">
+                    0
+                  </div>
+                )}
+              </div>
+              <span className="text-gray-400 flex-shrink-0">~</span>
+              <div className="flex flex-col items-start w-full min-w-0">
+                <SimpleNumberInput
+                  value={filters[maxKey] ?? ""}
+                  onChange={(v) =>
+                    setFilters((f = {}) => ({
+                      ...f,
+                      [maxKey]: v,
+                    }))
+                  }
+                  ariaLabel={
+                    typeof label === "string" ? label + " 최대" : undefined
+                  }
+                />
+                {isPrice && (
+                  <div className="text-xs text-gray-400 mt-0.5">
+                    {Number(filters[maxKey]).toLocaleString()}
+                  </div>
+                )}
+              </div>
+              {rightElement && (
+                <div className="flex-shrink-0 ml-1">{rightElement}</div>
+              )}
+            </div>
+          </div>
+          <hr className="my-2 border-gray-400 dark:border-zinc-700" />
+        </div>
+      </div>
+    );
+  }
+
+  // 필터 초기화 함수
+  function handleReset() {
+    // 가격, 작횟수, 가능 업횟수, 옵션, 잠재옵션 모두 초기값으로
+    const base: any = {
+      priceMin: "0",
+      priceMax: "1000000000",
+      scrollMin: "0",
+      scrollMax: (item.tuc || 0).toString(),
+      tucMin: "0",
+      tucMax: (item.tuc || 0).toString(),
+    };
+    getIncOptions().forEach((key) => {
+      const value = item.options?.[key] ?? 0;
+      base[key + "Min"] = value.toString();
+      base[key + "Max"] = value.toString();
+    });
+    setFilters(base);
+    setAddedOptionKeys([]);
+    if (onApply) onApply(base);
+  }
+
+  // 렌더링만 분기
+  if (isOthers) {
     function renderFilterBlock(
       label: React.ReactNode,
       minKey: "priceMin" | "priceMax",
@@ -303,215 +479,7 @@ export default function ItemFilter({
       </div>
     );
   }
-
-  // 필터 옵션 목록
-  const getIncOptions = () => {
-    if (!item.options) return Object.keys(optionMap);
-    return Object.keys(item.options).filter((key) => key.startsWith("inc"));
-  };
-
-  // 필터 state: string만 사용
-  const [filters, setFilters] = useState<{ [key: string]: any }>(() => {
-    // 장비 아이템이면 기존 필터 모두
-    const base: any = {
-      priceMin: "0",
-      priceMax: "1000000000",
-      scrollMin: "0",
-      scrollMax: (item.tuc || 0).toString(),
-      tucMin: "0",
-      tucMax: (item.tuc || 0).toString(),
-    };
-    getIncOptions().forEach((key) => {
-      const value = item.options?.[key] ?? 0;
-      base[key + "Min"] = value.toString();
-      base[key + "Max"] = value.toString();
-    });
-    return base;
-  });
-
-  // 1. 아이템이 실제로 가진 옵션(incSTR 등)은 항상 필터로 표시, x(삭제) 불가
-  const itemOptionKeys = item.options
-    ? Object.keys(item.options).filter((k) => optionMap[k])
-    : [];
-  // 2. 추가로 사용자가 추가한 옵션(STR, DEX 등) 관리
-  const [addedOptionKeys, setAddedOptionKeys] = useState<string[]>([]);
-  // 3. + 버튼에서 optionMap 전체에서 이미 추가된 것(기본+추가 모두)은 제외
-  const availableOptions = Object.keys(optionMap).filter(
-    (key) => !itemOptionKeys.includes(key) && !addedOptionKeys.includes(key)
-  );
-  // 4. 옵션 추가/제거 함수
-  function handleAddOption(key: string) {
-    // key가 STR, DEX 등일 수 있으므로 optionMap에서 역매핑
-    const realKey =
-      Object.keys(optionMap).find((k) => optionMap[k] === key) || key;
-    setAddedOptionKeys((prev) => [...prev, realKey]);
-    setFilters((f = {}) => ({
-      ...f,
-      [realKey + "Min"]: "0",
-      [realKey + "Max"]: "0",
-    }));
-    setShowOptionList(false);
-  }
-  function handleRemoveOption(key: string) {
-    setAddedOptionKeys((prev) => prev.filter((k) => k !== key));
-  }
-
-  // 옵션 추가 UI 상태
-  const [showOptionList, setShowOptionList] = useState(false);
-  const optionListRef = useRef<HTMLDivElement>(null);
-
-  // 바깥 클릭 시 옵션 리스트 닫기
-  useEffect(() => {
-    if (!showOptionList) return;
-    function handleClick(e: MouseEvent) {
-      if (
-        optionListRef.current &&
-        !optionListRef.current.contains(e.target as Node)
-      ) {
-        setShowOptionList(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, [showOptionList]);
-
-  // 잠재옵션도 일반 옵션과 동일하게 관리
-  const [addedPotentialKeys, setAddedPotentialKeys] = useState<string[]>([]);
-  const availablePotentialOptions = Object.keys(potentialOptionMap).filter(
-    (key) => !addedPotentialKeys.includes(key)
-  );
-  function handleAddPotentialOption(key: string) {
-    setAddedPotentialKeys((prev) => [...prev, key]);
-    setFilters((f = {}) => ({
-      ...f,
-      [key + "Min"]: "0",
-      [key + "Max"]: "100",
-    }));
-    setShowPotentialList(false);
-  }
-  function handleRemovePotentialOption(key: string) {
-    setAddedPotentialKeys((prev) => prev.filter((k) => k !== key));
-    setFilters((f = {}) => {
-      const newF = { ...f };
-      delete newF[key + "Min"];
-      delete newF[key + "Max"];
-      return newF;
-    });
-  }
-
-  // 잠재옵션 추가 UI
-  const [showPotentialList, setShowPotentialList] = useState(false);
-  const potentialListRef = useRef<HTMLDivElement>(null);
-
-  // 바깥 클릭 시 잠재 옵션 리스트 닫기
-  useEffect(() => {
-    if (!showPotentialList) return;
-    function handleClick(e: MouseEvent) {
-      if (
-        potentialListRef.current &&
-        !potentialListRef.current.contains(e.target as Node)
-      ) {
-        setShowPotentialList(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, [showPotentialList]);
-
-  // 필터 변경 시 부모에 알림
-  useEffect(() => {
-    setFilters((prev = {}) => ({
-      ...prev,
-    }));
-  }, [filters]);
-
-  // 필터 블록 (구분선 포함)
-  function renderFilterBlock(
-    label: React.ReactNode,
-    minKey: string,
-    maxKey: string,
-    rightElement?: React.ReactNode
-  ) {
-    const isPrice = minKey === "priceMin" && maxKey === "priceMax";
-    return (
-      <div className="mb-1 flex flex-col sm:flex-row items-center w-full">
-        <div className="flex-1 w-full">
-          <div className="flex flex-col sm:flex-row items-stretch gap-2 text-xs mb-1 text-gray-700 dark:text-gray-200 w-full">
-            <span className="w-full sm:w-20 min-w-0 text-left text-sm flex-shrink-0">
-              {label}
-            </span>
-            <div className="flex flex-row gap-1 w-full">
-              <div className="flex flex-col items-start w-full min-w-0">
-                <SimpleNumberInput
-                  value={filters[minKey] ?? ""}
-                  onChange={(v) =>
-                    setFilters((f = {}) => ({
-                      ...f,
-                      [minKey]: v,
-                    }))
-                  }
-                  ariaLabel={
-                    typeof label === "string" ? label + " 최소" : undefined
-                  }
-                />
-                {isPrice && (
-                  <div className="text-xs text-transparent mt-0.5 select-none">
-                    0
-                  </div>
-                )}
-              </div>
-              <span className="text-gray-400 flex-shrink-0">~</span>
-              <div className="flex flex-col items-start w-full min-w-0">
-                <SimpleNumberInput
-                  value={filters[maxKey] ?? ""}
-                  onChange={(v) =>
-                    setFilters((f = {}) => ({
-                      ...f,
-                      [maxKey]: v,
-                    }))
-                  }
-                  ariaLabel={
-                    typeof label === "string" ? label + " 최대" : undefined
-                  }
-                />
-                {isPrice && (
-                  <div className="text-xs text-gray-400 mt-0.5">
-                    {Number(filters[maxKey]).toLocaleString()}
-                  </div>
-                )}
-              </div>
-              {rightElement && (
-                <div className="flex-shrink-0 ml-1">{rightElement}</div>
-              )}
-            </div>
-          </div>
-          <hr className="my-2 border-gray-400 dark:border-zinc-700" />
-        </div>
-      </div>
-    );
-  }
-
-  // 필터 초기화 함수
-  function handleReset() {
-    // 가격, 작횟수, 가능 업횟수, 옵션, 잠재옵션 모두 초기값으로
-    const base: any = {
-      priceMin: "0",
-      priceMax: "1000000000",
-      scrollMin: "0",
-      scrollMax: (item.tuc || 0).toString(),
-      tucMin: "0",
-      tucMax: (item.tuc || 0).toString(),
-    };
-    getIncOptions().forEach((key) => {
-      const value = item.options?.[key] ?? 0;
-      base[key + "Min"] = value.toString();
-      base[key + "Max"] = value.toString();
-    });
-    setFilters(base);
-    setAddedOptionKeys([]);
-    if (onApply) onApply(base);
-  }
-
+  // 이하 기존 장비 전체 필터 UI 렌더링
   return (
     <div
       className="w-full max-w-full sm:max-w-xs md:max-w-sm lg:max-w-md border border-gray-300 dark:border-zinc-700 rounded min-h-full"
@@ -570,7 +538,7 @@ export default function ItemFilter({
         )}
         <hr className="border-t-2 border-gray-400 dark:border-zinc-700 mb-3" />
         {renderFilterBlock("가격", "priceMin", "priceMax")}
-        {!isEquip ? null : (
+        {!isOthers ? (
           <>
             {renderFilterBlock("작 횟수", "scrollMin", "scrollMax")}
             {renderFilterBlock(
@@ -701,7 +669,7 @@ export default function ItemFilter({
               </div>
             ))}
           </>
-        )}
+        ) : null}
       </div>
     </div>
   );

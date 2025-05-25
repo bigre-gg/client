@@ -24,32 +24,27 @@ export default function NonEquipItemDetail({
 }) {
   return (
     <div
-      className="flex flex-col p-3 w-full sm:w-[300px]"
+      className="w-[300px] bg-[#1d668d] text-white rounded-lg border-2 border-white shadow-lg"
       style={{
-        background: "#1d668d",
-        color: "white",
-        maxWidth: 300,
         minHeight: 180,
         fontFamily: "Dotum, 돋움, 'Apple SD Gothic Neo', sans-serif",
-        border: "2px solid #fff",
         boxShadow: "0 0 0 4px transparent, 0 0 0 6px #3a8ecb",
-        borderRadius: 6,
-        transform: "scale(0.95)",
-        transformOrigin: "top left",
+        padding: 0,
       }}
     >
       {/* 아이템 이름 */}
-      <div className="text-lg font-bold mb-1 text-center">{name}</div>
-      {/* 아이콘+설명 가로 배치 */}
-      <div className="flex flex-row items-start gap-2">
-        <div
-          className="flex-shrink-0 flex justify-center items-center"
-          style={{ minWidth: 60 }}
-        >
+      <div
+        className="text-lg font-bold text-center mt-0 mb-2"
+        style={{ width: "100%" }}
+      >
+        {name}
+      </div>
+      <div className="flex flex-row items-start w-full px-4 pb-3 gap-2">
+        <div style={{ minWidth: 60 }}>
           <ItemIcon id={itemId} size={60} disableDarkBg={true} />
         </div>
         <div
-          className="text-xs whitespace-pre-line text-left flex-1"
+          className="text-xs whitespace-pre-line text-left"
           style={{
             fontSize: "13px",
             fontWeight: "normal",

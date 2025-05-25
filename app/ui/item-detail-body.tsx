@@ -71,7 +71,7 @@ interface ItemApiResponse {
 
 export default function ItemDetailBody({
   item,
-  cardSize = 290,
+  cardSize = 280,
 }: {
   item: ItemApiResponse;
   cardSize?: number;

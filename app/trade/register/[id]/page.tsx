@@ -4,9 +4,10 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ItemApiResponse, getItemById } from "@/lib/items";
 import EditableItemDetailBody from "@/app/ui/EditableItemDetailBody";
+import NonEquipItemDetail from "@/app/ui/NonEquipItemDetail";
 
 const worldOptions = [
-  "미선택",
+  "아무데나",
   "빅토리아",
   "오르비스",
   "엘나스",
@@ -65,6 +66,11 @@ export default function TradeRegisterPage({
   const [discordId, setDiscordId] = useState<string | null>(null);
   const [userGlobalName, setUserGlobalName] = useState<string>("");
   const [userAvatar, setUserAvatar] = useState<string>("");
+
+  // 코인 입력 상태
+  const [goldCoin, setGoldCoin] = useState("0");
+  const [silverCoin, setSilverCoin] = useState("0");
+  const [bronzeCoin, setBronzeCoin] = useState("0");
 
   // status API에서 discordId 받아오기 (경로 수정)
   useEffect(() => {
@@ -143,9 +149,20 @@ export default function TradeRegisterPage({
   // 등록 핸들러
   const handleSubmit = async () => {
     if (!agree || !item.itemId) return;
-    if (!price || isNaN(Number(price)) || Number(price) <= 0) {
-      alert("가격을 입력해주세요.");
+    const gold = Number(goldCoin || 0);
+    const silver = Number(silverCoin || 0);
+    const bronze = Number(bronzeCoin || 0);
+    const hasPrice = price && !isNaN(Number(price)) && Number(price) > 0;
+    const hasCoin = gold > 0 || silver > 0 || bronze > 0;
+    if (!hasPrice && !hasCoin) {
+      alert("가격 또는 코인 중 하나 이상 입력해주세요.");
       return;
+    }
+
+    // 코인 문자열 생성
+    let coin = "";
+    if (gold > 0 || silver > 0 || bronze > 0) {
+      coin = `${gold}g${silver}s${bronze}b`;
     }
 
     // 커스텀 잠재옵션을 customOptions 배열로 변환
@@ -157,22 +174,40 @@ export default function TradeRegisterPage({
       })
     );
 
-    const reqData = {
-      itemId: item.itemId,
-      userDiscordId: discordId,
-      userGlobalName: userGlobalName,
-      userAvatar: userAvatar,
-      type,
-      upgradeCount,
-      tuc,
-      options,
-      potentialOptions,
-      customOptions,
-      itemPrice: Number(price),
-      haggling,
-      tradeWorld: prefferedWorld,
-      comment,
-    };
+    const reqData =
+      (item as any).type === "OTHERS"
+        ? {
+            itemId: item.itemId,
+            userDiscordId: discordId,
+            userGlobalName: userGlobalName,
+            userAvatar: userAvatar,
+            type,
+            itemType: (item as any).type || "OTHERS",
+            description: (item as any).description || "",
+            itemPrice: Number(price),
+            haggling,
+            tradeWorld: prefferedWorld,
+            comment,
+            coin,
+          }
+        : {
+            itemId: item.itemId,
+            userDiscordId: discordId,
+            userGlobalName: userGlobalName,
+            userAvatar: userAvatar,
+            type,
+            itemType: (item as any).type || "OTHERS",
+            upgradeCount,
+            tuc,
+            options,
+            potentialOptions,
+            customOptions,
+            itemPrice: Number(price),
+            haggling,
+            tradeWorld: prefferedWorld,
+            comment,
+            coin,
+          };
 
     console.log("Submitting item:", reqData);
     try {
@@ -236,22 +271,30 @@ export default function TradeRegisterPage({
       </div>
 
       {/* 아이템 디테일 - EditableItemDetailBody로 교체 */}
-      <div className="mb-4">
-        {item && item.itemId && (
-          <EditableItemDetailBody
-            item={item}
-            upgradeCount={upgradeCount}
-            setUpgradeCount={setUpgradeCount}
-            tuc={tuc}
-            setTuc={setTuc}
-            options={options}
-            setOptions={setOptions}
-            potentialOptions={potentialOptions}
-            setPotentialOptions={setPotentialOptions}
-            customPotentialOptions={customPotentialOptions}
-            setCustomPotentialOptions={setCustomPotentialOptions}
-          />
-        )}
+      <div className="mb-4 flex justify-center">
+        {item &&
+          item.itemId &&
+          ((item as any).type === "OTHERS" ? (
+            <NonEquipItemDetail
+              itemId={item.itemId}
+              name={item.name || ""}
+              description={(item as any).description || ""}
+            />
+          ) : (
+            <EditableItemDetailBody
+              item={item}
+              upgradeCount={upgradeCount}
+              setUpgradeCount={setUpgradeCount}
+              tuc={tuc}
+              setTuc={setTuc}
+              options={options}
+              setOptions={setOptions}
+              potentialOptions={potentialOptions}
+              setPotentialOptions={setPotentialOptions}
+              customPotentialOptions={customPotentialOptions}
+              setCustomPotentialOptions={setCustomPotentialOptions}
+            />
+          ))}
       </div>
 
       {/* 가격, 흥정, 월드, 코멘트 */}
@@ -267,6 +310,42 @@ export default function TradeRegisterPage({
           />
           <div className="text-xs text-gray-500 mt-1">
             {price ? Number(price).toLocaleString() : 0} 원
+          </div>
+          {/* or + 코인 입력 */}
+          <div className="flex items-center gap-2 mt-2">
+            <span className="font-bold text-gray-700 dark:text-gray-200">
+              or
+            </span>
+            <img src="/goldCoin.png" alt="Gold Coin" className="w-6 h-6" />
+            <input
+              type="number"
+              min={0}
+              value={goldCoin}
+              onChange={(e) =>
+                setGoldCoin(e.target.value.replace(/[^0-9]/g, ""))
+              }
+              className="w-12 border rounded px-1 py-0.5 bg-white dark:bg-zinc-800 text-center"
+            />
+            <img src="/silverCoin.png" alt="Silver Coin" className="w-6 h-6" />
+            <input
+              type="number"
+              min={0}
+              value={silverCoin}
+              onChange={(e) =>
+                setSilverCoin(e.target.value.replace(/[^0-9]/g, ""))
+              }
+              className="w-12 border rounded px-1 py-0.5 bg-white dark:bg-zinc-800 text-center"
+            />
+            <img src="/bronzeCoin.png" alt="Bronze Coin" className="w-6 h-6" />
+            <input
+              type="number"
+              min={0}
+              value={bronzeCoin}
+              onChange={(e) =>
+                setBronzeCoin(e.target.value.replace(/[^0-9]/g, ""))
+              }
+              className="w-12 border rounded px-1 py-0.5 bg-white dark:bg-zinc-800 text-center"
+            />
           </div>
         </div>
         <div>
@@ -327,9 +406,12 @@ export default function TradeRegisterPage({
         className="w-full py-2 rounded bg-blue-600 text-white font-bold disabled:bg-gray-400"
         disabled={
           !agree ||
-          !price ||
-          isNaN(Number(price)) ||
-          Number(price) <= 0 ||
+          !(
+            (price && !isNaN(Number(price)) && Number(price) > 0) ||
+            Number(goldCoin || 0) > 0 ||
+            Number(silverCoin || 0) > 0 ||
+            Number(bronzeCoin || 0) > 0
+          ) ||
           !discordId
         }
         onClick={handleSubmit}
