@@ -110,30 +110,27 @@ export default function ItemDetailBody({
 
   return (
     <div
-      className="flex flex-col p-3 w-full sm:w-[320px]"
+      className="flex flex-col p-3 w-full max-w-full sm:max-w-xs md:max-w-sm lg:max-w-md"
       style={{
         background: "#1d668d",
         color: "white",
-        maxWidth: 320,
         minHeight: 285,
         fontFamily: "Dotum, 돋움, 'Apple SD Gothic Neo', sans-serif",
         border: "2px solid #fff",
         boxShadow: "0 0 0 4px transparent, 0 0 0 6px #3a8ecb",
         borderRadius: 6,
-        transform: "scale(0.95)",
-        transformOrigin: "top left",
       }}
     >
       {/* 아이템 이름 */}
       <div className="text-lg font-bold mb-1 text-center">{item.name}</div>
-      <div className="flex flex-row">
+      <div className="grid grid-cols-[auto_1fr] items-center w-full relative">
         {/* 아이템 아이콘 */}
-        <div className="mr-3">
+        <div className="flex-shrink-0 col-start-1 row-start-1 z-10">
           <ItemIcon id={item.itemId} size={60} disableDarkBg={true} />
         </div>
         {/* 요구 능력치 */}
         <div
-          className="flex flex-col gap-0 text-xs items-center justify-center text-center"
+          className="flex flex-col gap-0 text-xs items-center justify-center text-center col-start-1 col-end-3 row-start-1 w-full justify-self-center"
           style={{
             lineHeight: 1.15,
             fontSize: "12.5px",

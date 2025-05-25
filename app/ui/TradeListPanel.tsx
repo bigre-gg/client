@@ -187,12 +187,12 @@ export default function TradeListPanel({
           </button>
         </div>
       )}
-      <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full h-auto sm:h-[480px] sm:max-h-[480px]">
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full h-[700px] max-h-[700px]">
         {/* 팝니다 */}
         <div className="flex-1 bg-white dark:bg-[#181c23] rounded-lg p-2 flex flex-col overflow-y-auto min-w-0 sm:min-w-[320px] sm:max-w-[500px] border border-gray-300 dark:border-zinc-700 mb-2 sm:mb-0">
           <div
-            className="font-bold mb-2 text-black dark:text-white text-left text-lg px-3 py-2 rounded-t-lg bg-blue-600 dark:bg-blue-700"
-            style={{ background: "#2563eb" }}
+            className="font-bold mb-2 text-white text-left text-lg px-4 py-2 rounded-t-lg"
+            style={{ background: "#274a84" }}
           >
             팝니다
           </div>
@@ -302,8 +302,8 @@ export default function TradeListPanel({
         {/* 삽니다 */}
         <div className="flex-1 bg-white dark:bg-[#181c23] rounded-lg p-2 flex flex-col overflow-y-auto min-w-0 sm:min-w-[320px] sm:max-w-[500px] border border-gray-300 dark:border-zinc-700">
           <div
-            className="font-bold mb-2 text-black dark:text-white text-left text-lg px-3 py-2 rounded-t-lg bg-green-500 dark:bg-green-700"
-            style={{ background: "#22c55e" }}
+            className="font-bold mb-2 text-white text-left text-lg px-4 py-2 rounded-t-lg"
+            style={{ background: "#1a6c38" }}
           >
             삽니다
           </div>

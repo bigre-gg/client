@@ -161,7 +161,7 @@ export default function ItemDetail({ params }: { params: { id: string } }) {
                   description={description}
                 />
               )}
-              <div className="mt-2">
+              <div className="mt-3 sm:mt-5">
                 <ItemFilter item={item} onFilterChange={handleFilterChange} />
               </div>
             </div>

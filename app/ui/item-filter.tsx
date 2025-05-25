@@ -176,50 +176,52 @@ export default function ItemFilter({
     ) {
       const isPrice = minKey === "priceMin" && maxKey === "priceMax";
       return (
-        <div className="mb-1 flex items-center">
-          <div className="flex-1">
-            <div className="flex items-center gap-2 text-xs mb-1 text-gray-700 dark:text-gray-200">
-              <span className="w-20 min-w-[50px] text-left text-sm">
+        <div className="mb-1 flex flex-col sm:flex-row items-center w-full">
+          <div className="flex-1 w-full">
+            <div className="flex flex-col sm:flex-row items-stretch gap-2 text-xs mb-1 text-gray-700 dark:text-gray-200 w-full">
+              <span className="w-full sm:w-20 min-w-0 text-left text-sm flex-shrink-0">
                 {label}
               </span>
-              <div className="flex flex-col items-start">
-                <SimpleNumberInput
-                  value={filters[minKey]}
-                  onChange={(v) =>
-                    setFilters((f) => ({
-                      ...f,
-                      [minKey]: v,
-                    }))
-                  }
-                  ariaLabel={
-                    typeof label === "string" ? label + " 최소" : undefined
-                  }
-                />
-                {isPrice && (
-                  <div className="text-xs text-transparent mt-0.5 select-none">
-                    0
-                  </div>
-                )}
-              </div>
-              <span className="text-gray-400">~</span>
-              <div className="flex flex-col items-start">
-                <SimpleNumberInput
-                  value={filters[maxKey]}
-                  onChange={(v) =>
-                    setFilters((f) => ({
-                      ...f,
-                      [maxKey]: v,
-                    }))
-                  }
-                  ariaLabel={
-                    typeof label === "string" ? label + " 최대" : undefined
-                  }
-                />
-                {isPrice && (
-                  <div className="text-xs text-gray-400 mt-0.5">
-                    {Number(filters[maxKey]).toLocaleString()}
-                  </div>
-                )}
+              <div className="flex flex-row gap-1 w-full">
+                <div className="flex flex-col items-start w-full min-w-0">
+                  <SimpleNumberInput
+                    value={filters[minKey]}
+                    onChange={(v) =>
+                      setFilters((f) => ({
+                        ...f,
+                        [minKey]: v,
+                      }))
+                    }
+                    ariaLabel={
+                      typeof label === "string" ? label + " 최소" : undefined
+                    }
+                  />
+                  {isPrice && (
+                    <div className="text-xs text-transparent mt-0.5 select-none">
+                      0
+                    </div>
+                  )}
+                </div>
+                <span className="text-gray-400 flex-shrink-0">~</span>
+                <div className="flex flex-col items-start w-full min-w-0">
+                  <SimpleNumberInput
+                    value={filters[maxKey]}
+                    onChange={(v) =>
+                      setFilters((f) => ({
+                        ...f,
+                        [maxKey]: v,
+                      }))
+                    }
+                    ariaLabel={
+                      typeof label === "string" ? label + " 최대" : undefined
+                    }
+                  />
+                  {isPrice && (
+                    <div className="text-xs text-gray-400 mt-0.5">
+                      {Number(filters[maxKey]).toLocaleString()}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
             <hr className="my-2 border-gray-400 dark:border-zinc-700" />
@@ -229,14 +231,13 @@ export default function ItemFilter({
     }
     return (
       <div
-        className="w-full sm:w-[320px] border border-gray-300 dark:border-zinc-700 rounded min-h-full"
+        className="w-full max-w-full sm:max-w-xs md:max-w-sm lg:max-w-md border border-gray-300 dark:border-zinc-700 rounded min-h-full"
         style={{
           fontFamily:
             "Apple SD Gothic Neo, Noto Sans KR, Malgun Gothic, 돋움, Dotum, Arial, sans-serif",
-          maxWidth: 320,
         }}
       >
-        <div className="sm:p-2 md:p-3 w-full">
+        <div className="p-2 md:p-3 w-full">
           <h2 className="text-sm mb-2 text-gray-900 dark:text-white text-left">
             아이템 옵션 필터
           </h2>
@@ -324,50 +325,56 @@ export default function ItemFilter({
   ) {
     const isPrice = minKey === "priceMin" && maxKey === "priceMax";
     return (
-      <div className="mb-1 flex items-center">
-        <div className="flex-1">
-          <div className="flex items-center gap-2 text-xs mb-1 text-gray-700 dark:text-gray-200">
-            <span className="w-20 min-w-[50px] text-left text-sm">{label}</span>
-            <div className="flex flex-col items-start">
-              <SimpleNumberInput
-                value={filters[minKey]}
-                onChange={(v) =>
-                  setFilters((f: Record<string, string>) => ({
-                    ...f,
-                    [minKey]: v,
-                  }))
-                }
-                ariaLabel={
-                  typeof label === "string" ? label + " 최소" : undefined
-                }
-              />
-              {isPrice && (
-                <div className="text-xs text-transparent mt-0.5 select-none">
-                  0
-                </div>
+      <div className="mb-1 flex flex-col sm:flex-row items-center w-full">
+        <div className="flex-1 w-full">
+          <div className="flex flex-col sm:flex-row items-stretch gap-2 text-xs mb-1 text-gray-700 dark:text-gray-200 w-full">
+            <span className="w-full sm:w-20 min-w-0 text-left text-sm flex-shrink-0">
+              {label}
+            </span>
+            <div className="flex flex-row gap-1 w-full">
+              <div className="flex flex-col items-start w-full min-w-0">
+                <SimpleNumberInput
+                  value={filters[minKey]}
+                  onChange={(v) =>
+                    setFilters((f: Record<string, string>) => ({
+                      ...f,
+                      [minKey]: v,
+                    }))
+                  }
+                  ariaLabel={
+                    typeof label === "string" ? label + " 최소" : undefined
+                  }
+                />
+                {isPrice && (
+                  <div className="text-xs text-transparent mt-0.5 select-none">
+                    0
+                  </div>
+                )}
+              </div>
+              <span className="text-gray-400 flex-shrink-0">~</span>
+              <div className="flex flex-col items-start w-full min-w-0">
+                <SimpleNumberInput
+                  value={filters[maxKey]}
+                  onChange={(v) =>
+                    setFilters((f: Record<string, string>) => ({
+                      ...f,
+                      [maxKey]: v,
+                    }))
+                  }
+                  ariaLabel={
+                    typeof label === "string" ? label + " 최대" : undefined
+                  }
+                />
+                {isPrice && (
+                  <div className="text-xs text-gray-400 mt-0.5">
+                    {Number(filters[maxKey]).toLocaleString()}
+                  </div>
+                )}
+              </div>
+              {rightElement && (
+                <div className="flex-shrink-0 ml-1">{rightElement}</div>
               )}
             </div>
-            <span className="text-gray-400">~</span>
-            <div className="flex flex-col items-start">
-              <SimpleNumberInput
-                value={filters[maxKey]}
-                onChange={(v) =>
-                  setFilters((f: Record<string, string>) => ({
-                    ...f,
-                    [maxKey]: v,
-                  }))
-                }
-                ariaLabel={
-                  typeof label === "string" ? label + " 최대" : undefined
-                }
-              />
-              {isPrice && (
-                <div className="text-xs text-gray-400 mt-0.5">
-                  {Number(filters[maxKey]).toLocaleString()}
-                </div>
-              )}
-            </div>
-            {rightElement}
           </div>
           <hr className="my-2 border-gray-400 dark:border-zinc-700" />
         </div>
@@ -422,14 +429,13 @@ export default function ItemFilter({
 
   return (
     <div
-      className="w-full sm:w-[320px] border border-gray-300 dark:border-zinc-700 rounded min-h-full"
+      className="w-full max-w-full sm:max-w-xs md:max-w-sm lg:max-w-md border border-gray-300 dark:border-zinc-700 rounded min-h-full"
       style={{
         fontFamily:
           "Apple SD Gothic Neo, Noto Sans KR, Malgun Gothic, 돋움, Dotum, Arial, sans-serif",
-        maxWidth: 320,
       }}
     >
-      <div className="sm:p-2 md:p-3 w-full">
+      <div className="p-2 md:p-3 w-full">
         <h2 className="text-sm mb-2 text-gray-900 dark:text-white text-left">
           아이템 옵션 필터
         </h2>
