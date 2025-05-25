@@ -93,6 +93,7 @@ interface EditableItemDetailBodyProps {
       | ((prev: { [key: string]: string }) => { [key: string]: string })
   ) => void;
   cardSize?: number;
+  readOnly?: boolean;
 }
 
 // input 공통 스타일
@@ -116,6 +117,7 @@ export default function EditableItemDetailBody({
   customPotentialOptions,
   setCustomPotentialOptions,
   cardSize = 290,
+  readOnly = false,
 }: EditableItemDetailBodyProps) {
   // 직업 코드를 직업 이름으로 변환
   const requiredJob =
@@ -490,16 +492,21 @@ export default function EditableItemDetailBody({
                   <input
                     type="number"
                     value={value}
-                    onChange={(e) => handleOptionChange(key, e.target.value)}
+                    onChange={
+                      readOnly
+                        ? undefined
+                        : (e) => handleOptionChange(key, e.target.value)
+                    }
                     className={underlineInputOptionClass}
                     style={{
                       width: `${Math.max(1, value.length) + 1}ch`,
                       minWidth: 16,
                       textAlign: "center",
                     }}
+                    readOnly={readOnly}
                   />
-                  {/* 추가된 옵션만 x 버튼 노출 */}
-                  {!initialOptionKeys.includes(key) && (
+                  {/* 추가된 옵션만 x 버튼 노출 (readOnly 아닐 때만) */}
+                  {!readOnly && !initialOptionKeys.includes(key) && (
                     <button
                       type="button"
                       onClick={() => handleRemoveOption(key)}
@@ -548,8 +555,10 @@ export default function EditableItemDetailBody({
                       <input
                         type="number"
                         value={value}
-                        onChange={(e) =>
-                          handlePotentialChange(key, e.target.value)
+                        onChange={
+                          readOnly
+                            ? undefined
+                            : (e) => handlePotentialChange(key, e.target.value)
                         }
                         className={underlineInputOptionClass}
                         style={{
@@ -557,16 +566,19 @@ export default function EditableItemDetailBody({
                           minWidth: 16,
                           textAlign: "center",
                         }}
+                        readOnly={readOnly}
                       />
                       {isPercent && <span style={{ color: "#fff" }}>%</span>}
-                      <button
-                        type="button"
-                        onClick={() => handleRemovePotentialOption(key)}
-                        className="ml-1 text-xs text-red-300 hover:text-red-500"
-                        aria-label="잠재옵션 삭제"
-                      >
-                        ×
-                      </button>
+                      {!readOnly && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemovePotentialOption(key)}
+                          className="ml-1 text-xs text-red-300 hover:text-red-500"
+                          aria-label="잠재옵션 삭제"
+                        >
+                          ×
+                        </button>
+                      )}
                     </div>
                   );
                 })}
@@ -584,8 +596,14 @@ export default function EditableItemDetailBody({
                     <input
                       type="text"
                       value={value}
-                      onChange={(e) =>
-                        handleCustomPotentialValueChange(key, e.target.value)
+                      onChange={
+                        readOnly
+                          ? undefined
+                          : (e) =>
+                              handleCustomPotentialValueChange(
+                                key,
+                                e.target.value
+                              )
                       }
                       className={underlineInputOptionClass}
                       style={{
@@ -593,15 +611,18 @@ export default function EditableItemDetailBody({
                         minWidth: 16,
                         textAlign: "center",
                       }}
+                      readOnly={readOnly}
                     />
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveCustomPotential(key)}
-                      className="ml-1 text-xs text-red-300 hover:text-red-500"
-                      aria-label="커스텀 잠재옵션 삭제"
-                    >
-                      ×
-                    </button>
+                    {!readOnly && (
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveCustomPotential(key)}
+                        className="ml-1 text-xs text-red-300 hover:text-red-500"
+                        aria-label="커스텀 잠재옵션 삭제"
+                      >
+                        ×
+                      </button>
+                    )}
                   </div>
                 ))}
               </>

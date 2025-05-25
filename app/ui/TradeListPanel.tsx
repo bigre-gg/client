@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import ItemIcon from "@/app/ui/ItemIcon";
 import { useRouter } from "next/navigation";
+import TradeEquipDetailBody from "@/app/ui/TradeEquipDetailBody";
 
 interface TradeListPanelProps {
   itemId: number;
@@ -43,6 +44,89 @@ function shouldShowCoin(coinStr?: string) {
   const { g, s, b } = parseCoinString(coinStr);
   return g > 0 || s > 0 || b > 0;
 }
+
+// 팝오버(툴팁) 컴포넌트
+function Popover({
+  children,
+  content,
+}: {
+  children: React.ReactNode;
+  content: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(false);
+  const [pos, setPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const ref = useRef<HTMLSpanElement>(null);
+  return (
+    <span
+      ref={ref}
+      style={{ position: "relative", display: "inline-block" }}
+      onMouseEnter={(e) => {
+        setOpen(true);
+        setPos({
+          x: e.clientX,
+          y: e.clientY,
+        });
+      }}
+      onMouseMove={(e) => {
+        if (open) {
+          setPos({
+            x: e.clientX,
+            y: e.clientY,
+          });
+        }
+      }}
+      onMouseLeave={() => setOpen(false)}
+    >
+      {children}
+      {open && (
+        <div
+          style={{
+            position: "fixed",
+            top: pos.y + 8,
+            left: pos.x + 8,
+            zIndex: 9999,
+          }}
+        >
+          {content}
+        </div>
+      )}
+    </span>
+  );
+}
+
+// 잠재옵션 한글 변환 매핑 (EditableItemDetailBody와 동일)
+const POTENTIAL_OPTION_TRANSLATIONS: Record<string, string> = {
+  str: "STR",
+  dex: "DEX",
+  int: "INT",
+  luk: "LUK",
+  strP: "STR",
+  dexP: "DEX",
+  intP: "INT",
+  lukP: "LUK",
+  allStatP: "올스탯",
+  pad: "공격력",
+  padP: "공격력",
+  mad: "마력",
+  madP: "마력",
+  hp: "HP",
+  hpP: "HP",
+  mp: "MP",
+  mpP: "MP",
+  pdd: "물리 방어력",
+  mdd: "마법 방어력",
+  acc: "명중치",
+  eva: "회피치",
+  bossDmgP: "보스 몬스터 공격 시 데미지 증가",
+  critRateP: "크리티컬 확률 증가",
+  dmgP: "총 데미지",
+  iedP: "몬스터 방어율 무시",
+  invincSec: "피격 후 무적 시간 증가",
+  healEffP: "HP 회복 아이템/스킬 효율",
+  allResistP: "모든 속성 내성",
+  dropRateP: "아이템/메소 획득 확률",
+  mpReduceP: "모든 스킬의 MP 소모",
+};
 
 export default function TradeListPanel({
   itemId,
@@ -218,7 +302,11 @@ export default function TradeListPanel({
   // 잠재옵션 태그
   function getPotentialTags(trade: any) {
     if (!trade.potentialOptions) return [];
-    return Object.entries(trade.potentialOptions).map(([k, v]) => `${k} +${v}`);
+    return Object.entries(trade.potentialOptions).map(([k, v]) => {
+      const label = POTENTIAL_OPTION_TRANSLATIONS[k] || k;
+      const isPercent = typeof k === "string" && k.endsWith("P");
+      return `${label} +${v}${isPercent ? "%" : ""}`;
+    });
   }
   // customOptions 태그
   function getCustomTags(trade: any) {
@@ -306,7 +394,21 @@ export default function TradeListPanel({
             >
               <div className="flex items-center gap-2">
                 <div className="relative">
-                  <ItemIcon id={itemId} size={32} disableDarkBg={true} />
+                  {(trade.itemType || baseItem.type) === "EQUIP" ? (
+                    <Popover
+                      content={
+                        <TradeEquipDetailBody
+                          item={baseItem}
+                          trade={trade}
+                          cardSize={320}
+                        />
+                      }
+                    >
+                      <ItemIcon id={itemId} size={32} disableDarkBg={true} />
+                    </Popover>
+                  ) : (
+                    <ItemIcon id={itemId} size={32} disableDarkBg={true} />
+                  )}
                 </div>
                 <div className="flex flex-col flex-1 min-w-0">
                   <span className="font-semibold text-[13px] text-black dark:text-white truncate">
@@ -472,7 +574,21 @@ export default function TradeListPanel({
             >
               <div className="flex items-center gap-2">
                 <div className="relative">
-                  <ItemIcon id={itemId} size={32} disableDarkBg={true} />
+                  {(trade.itemType || baseItem.type) === "EQUIP" ? (
+                    <Popover
+                      content={
+                        <TradeEquipDetailBody
+                          item={baseItem}
+                          trade={trade}
+                          cardSize={320}
+                        />
+                      }
+                    >
+                      <ItemIcon id={itemId} size={32} disableDarkBg={true} />
+                    </Popover>
+                  ) : (
+                    <ItemIcon id={itemId} size={32} disableDarkBg={true} />
+                  )}
                 </div>
                 <div className="flex flex-col flex-1 min-w-0">
                   <span className="font-semibold text-[13px] text-black dark:text-white truncate">
