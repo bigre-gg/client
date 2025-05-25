@@ -19,7 +19,7 @@ const optionMap: { [key: string]: string } = {
 };
 
 // 잠재 옵션 리스트 (영어 변수명: 한글)
-const potentialOptionMap: Record<string, string> = {
+const potentialOptionMap: { [key: string]: string } = {
   str: "STR",
   dex: "DEX",
   int: "INT",
@@ -150,9 +150,11 @@ function PlusButton({
 export default function ItemFilter({
   item,
   onFilterChange,
+  onApply,
 }: {
   item: ItemApiResponse;
   onFilterChange: (filters: any) => void;
+  onApply?: (filters: any) => void;
 }) {
   // 장비 여부 분기
   const isEquip = item && (item as any).isEquip !== false;
@@ -237,10 +239,64 @@ export default function ItemFilter({
             "Apple SD Gothic Neo, Noto Sans KR, Malgun Gothic, 돋움, Dotum, Arial, sans-serif",
         }}
       >
-        <div className="p-2 md:p-3 w-full">
+        <div className="p-2 md:p-3 w-full relative">
           <h2 className="text-sm mb-2 text-gray-900 dark:text-white text-left">
             아이템 옵션 필터
           </h2>
+          {/* 필터 적용 버튼 */}
+          {onApply && (
+            <div className="absolute right-2 top-2 flex gap-1">
+              <button
+                className="p-1 rounded hover:bg-blue-100 dark:hover:bg-zinc-700"
+                title="필터 적용"
+                onClick={() => onApply(filters)}
+              >
+                <svg width="20" height="20" fill="none" viewBox="0 0 20 20">
+                  <circle cx="10" cy="10" r="10" fill="#2563eb" />
+                  <path
+                    d="M6 10.5l3 3 5-6"
+                    stroke="#fff"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
+              <button
+                className="p-1 rounded hover:bg-blue-100 dark:hover:bg-zinc-700"
+                title="필터 초기화"
+                onClick={() => {
+                  setFilters({
+                    priceMin: "0",
+                    priceMax: "1000000000",
+                  });
+                  if (onApply)
+                    onApply({
+                      priceMin: "0",
+                      priceMax: "1000000000",
+                    });
+                }}
+              >
+                <svg width="20" height="20" fill="none" viewBox="0 0 20 20">
+                  <circle cx="10" cy="10" r="10" fill="#2563eb" />
+                  <path
+                    d="M13.5 7.5A4 4 0 1 0 15 10"
+                    stroke="#fff"
+                    strokeWidth="2"
+                    fill="none"
+                    strokeLinecap="round"
+                  />
+                  <path
+                    d="M13.5 7.5V5.5M13.5 7.5H15.5"
+                    stroke="#fff"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
+            </div>
+          )}
           <hr className="border-t-2 border-gray-400 dark:border-zinc-700 mb-3" />
           {renderFilterBlock("가격", "priceMin", "priceMax")}
         </div>
@@ -255,7 +311,7 @@ export default function ItemFilter({
   };
 
   // 필터 state: string만 사용
-  const [filters, setFilters] = useState(() => {
+  const [filters, setFilters] = useState<{ [key: string]: any }>(() => {
     // 장비 아이템이면 기존 필터 모두
     const base: any = {
       priceMin: "0",
@@ -285,7 +341,15 @@ export default function ItemFilter({
   );
   // 4. 옵션 추가/제거 함수
   function handleAddOption(key: string) {
-    setAddedOptionKeys((prev) => [...prev, key]);
+    // key가 STR, DEX 등일 수 있으므로 optionMap에서 역매핑
+    const realKey =
+      Object.keys(optionMap).find((k) => optionMap[k] === key) || key;
+    setAddedOptionKeys((prev) => [...prev, realKey]);
+    setFilters((f = {}) => ({
+      ...f,
+      [realKey + "Min"]: "0",
+      [realKey + "Max"]: "0",
+    }));
     setShowOptionList(false);
   }
   function handleRemoveOption(key: string) {
@@ -311,10 +375,55 @@ export default function ItemFilter({
     return () => document.removeEventListener("mousedown", handleClick);
   }, [showOptionList]);
 
+  // 잠재옵션도 일반 옵션과 동일하게 관리
+  const [addedPotentialKeys, setAddedPotentialKeys] = useState<string[]>([]);
+  const availablePotentialOptions = Object.keys(potentialOptionMap).filter(
+    (key) => !addedPotentialKeys.includes(key)
+  );
+  function handleAddPotentialOption(key: string) {
+    setAddedPotentialKeys((prev) => [...prev, key]);
+    setFilters((f = {}) => ({
+      ...f,
+      [key + "Min"]: "0",
+      [key + "Max"]: "100",
+    }));
+    setShowPotentialList(false);
+  }
+  function handleRemovePotentialOption(key: string) {
+    setAddedPotentialKeys((prev) => prev.filter((k) => k !== key));
+    setFilters((f = {}) => {
+      const newF = { ...f };
+      delete newF[key + "Min"];
+      delete newF[key + "Max"];
+      return newF;
+    });
+  }
+
+  // 잠재옵션 추가 UI
+  const [showPotentialList, setShowPotentialList] = useState(false);
+  const potentialListRef = useRef<HTMLDivElement>(null);
+
+  // 바깥 클릭 시 잠재 옵션 리스트 닫기
+  useEffect(() => {
+    if (!showPotentialList) return;
+    function handleClick(e: MouseEvent) {
+      if (
+        potentialListRef.current &&
+        !potentialListRef.current.contains(e.target as Node)
+      ) {
+        setShowPotentialList(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [showPotentialList]);
+
   // 필터 변경 시 부모에 알림
   useEffect(() => {
-    onFilterChange(filters);
-  }, [filters, onFilterChange]);
+    setFilters((prev = {}) => ({
+      ...prev,
+    }));
+  }, [filters]);
 
   // 필터 블록 (구분선 포함)
   function renderFilterBlock(
@@ -334,9 +443,9 @@ export default function ItemFilter({
             <div className="flex flex-row gap-1 w-full">
               <div className="flex flex-col items-start w-full min-w-0">
                 <SimpleNumberInput
-                  value={filters[minKey]}
+                  value={filters[minKey] ?? ""}
                   onChange={(v) =>
-                    setFilters((f: Record<string, string>) => ({
+                    setFilters((f = {}) => ({
                       ...f,
                       [minKey]: v,
                     }))
@@ -354,9 +463,9 @@ export default function ItemFilter({
               <span className="text-gray-400 flex-shrink-0">~</span>
               <div className="flex flex-col items-start w-full min-w-0">
                 <SimpleNumberInput
-                  value={filters[maxKey]}
+                  value={filters[maxKey] ?? ""}
                   onChange={(v) =>
-                    setFilters((f: Record<string, string>) => ({
+                    setFilters((f = {}) => ({
                       ...f,
                       [maxKey]: v,
                     }))
@@ -382,49 +491,25 @@ export default function ItemFilter({
     );
   }
 
-  // 잠재 옵션 필터 상태 관리
-  const basePotentialKeys = Object.keys(potentialOptionMap);
-  const [potentialFilters, setPotentialFilters] = useState<{
-    [key: string]: { min: string; max: string };
-  }>(() => {
-    const base: any = {};
-    return base;
-  });
-  const addedPotentialKeys = Object.keys(potentialFilters);
-  const availablePotentialOptions = basePotentialKeys.filter(
-    (key) => !addedPotentialKeys.includes(key)
-  );
-  const [showPotentialList, setShowPotentialList] = useState(false);
-  const potentialListRef = useRef<HTMLDivElement>(null);
-
-  // 바깥 클릭 시 잠재 옵션 리스트 닫기
-  useEffect(() => {
-    if (!showPotentialList) return;
-    function handleClick(e: MouseEvent) {
-      if (
-        potentialListRef.current &&
-        !potentialListRef.current.contains(e.target as Node)
-      ) {
-        setShowPotentialList(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, [showPotentialList]);
-
-  function handleAddPotentialOption(key: string) {
-    setPotentialFilters((prev) => ({
-      ...prev,
-      [key]: { min: "0", max: "100" },
-    }));
-    setShowPotentialList(false);
-  }
-  function handleRemovePotentialOption(key: string) {
-    setPotentialFilters((prev) => {
-      const newFilters = { ...prev };
-      delete newFilters[key];
-      return newFilters;
+  // 필터 초기화 함수
+  function handleReset() {
+    // 가격, 작횟수, 가능 업횟수, 옵션, 잠재옵션 모두 초기값으로
+    const base: any = {
+      priceMin: "0",
+      priceMax: "1000000000",
+      scrollMin: "0",
+      scrollMax: (item.tuc || 0).toString(),
+      tucMin: "0",
+      tucMax: (item.tuc || 0).toString(),
+    };
+    getIncOptions().forEach((key) => {
+      const value = item.options?.[key] ?? 0;
+      base[key + "Min"] = value.toString();
+      base[key + "Max"] = value.toString();
     });
+    setFilters(base);
+    setAddedOptionKeys([]);
+    if (onApply) onApply(base);
   }
 
   return (
@@ -435,10 +520,54 @@ export default function ItemFilter({
           "Apple SD Gothic Neo, Noto Sans KR, Malgun Gothic, 돋움, Dotum, Arial, sans-serif",
       }}
     >
-      <div className="p-2 md:p-3 w-full">
+      <div className="p-2 md:p-3 w-full relative">
         <h2 className="text-sm mb-2 text-gray-900 dark:text-white text-left">
           아이템 옵션 필터
         </h2>
+        {/* 필터 적용 버튼 */}
+        {onApply && (
+          <div className="absolute right-2 top-2 flex gap-1">
+            <button
+              className="p-1 rounded hover:bg-blue-100 dark:hover:bg-zinc-700"
+              title="필터 적용"
+              onClick={() => onApply({ ...filters })}
+            >
+              <svg width="20" height="20" fill="none" viewBox="0 0 20 20">
+                <circle cx="10" cy="10" r="10" fill="#2563eb" />
+                <path
+                  d="M6 10.5l3 3 5-6"
+                  stroke="#fff"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+            <button
+              className="p-1 rounded hover:bg-blue-100 dark:hover:bg-zinc-700"
+              title="필터 초기화"
+              onClick={handleReset}
+            >
+              <svg width="20" height="20" fill="none" viewBox="0 0 20 20">
+                <circle cx="10" cy="10" r="10" fill="#2563eb" />
+                <path
+                  d="M13.5 7.5A4 4 0 1 0 15 10"
+                  stroke="#fff"
+                  strokeWidth="2"
+                  fill="none"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M13.5 7.5V5.5M13.5 7.5H15.5"
+                  stroke="#fff"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+          </div>
+        )}
         <hr className="border-t-2 border-gray-400 dark:border-zinc-700 mb-3" />
         {renderFilterBlock("가격", "priceMin", "priceMax")}
         {!isEquip ? null : (
@@ -552,7 +681,7 @@ export default function ItemFilter({
                 )}
               </div>
             ))}
-            {/* 추가된 잠재 옵션 필터들 */}
+            {/* 추가된 잠재옵션 필터들 (일반 옵션과 동일하게) */}
             {addedPotentialKeys.map((key) => (
               <div key={key}>
                 {renderFilterBlock(

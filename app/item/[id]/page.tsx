@@ -25,6 +25,7 @@ export default function ItemDetail({ params }: { params: { id: string } }) {
   const [trades, setTrades] = useState([]);
   const [showPendingOnly, setShowPendingOnly] = useState(true);
   const [sortType, setSortType] = useState<"latest" | "price">("latest");
+  const [tradeFilter, setTradeFilter] = useState<any>(null);
 
   const router = useRouter();
 
@@ -162,7 +163,11 @@ export default function ItemDetail({ params }: { params: { id: string } }) {
                 />
               )}
               <div className="mt-3 sm:mt-5">
-                <ItemFilter item={item} onFilterChange={handleFilterChange} />
+                <ItemFilter
+                  item={item}
+                  onFilterChange={handleFilterChange}
+                  onApply={setTradeFilter}
+                />
               </div>
             </div>
             {/* 거래 리스트 패널 */}
@@ -171,6 +176,7 @@ export default function ItemDetail({ params }: { params: { id: string } }) {
                 itemId={itemId}
                 itemMeta={itemMeta}
                 baseItem={item}
+                filter={tradeFilter}
               />
             </div>
           </div>

@@ -8,6 +8,7 @@ interface TradeListPanelProps {
   baseItem?: any;
   trades?: any[];
   showFilterBar?: boolean;
+  filter?: any;
 }
 
 // 옵션 한글/영문 번역 테이블
@@ -34,6 +35,7 @@ export default function TradeListPanel({
   baseItem,
   trades: propTrades,
   showFilterBar = true,
+  filter,
 }: TradeListPanelProps) {
   const [trades, setTrades] = useState<any[]>(propTrades || []);
   const [showPendingOnly, setShowPendingOnly] = useState(true);
@@ -50,10 +52,91 @@ export default function TradeListPanel({
       .then((data) => setTrades(data || []));
   }, [itemId, propTrades]);
 
+  useEffect(() => {
+    console.log("TradeListPanel filter prop:", filter);
+  }, [filter]);
+
   // 정렬/필터
   const filteredTrades = useMemo(() => {
     let arr = trades;
     if (showPendingOnly) arr = arr.filter((t: any) => t.status === "PENDING");
+    // 필터 적용
+    if (filter) {
+      arr = arr.filter((t: any) => {
+        // 가격
+        if (filter.priceMin && t.itemPrice < Number(filter.priceMin))
+          return false;
+        if (filter.priceMax && t.itemPrice > Number(filter.priceMax))
+          return false;
+        // 작횟수
+        if (filter.scrollMin && t.upgradeCount < Number(filter.scrollMin))
+          return false;
+        if (filter.scrollMax && t.upgradeCount > Number(filter.scrollMax))
+          return false;
+        // 가능 업횟수
+        if (filter.tucMin && t.tuc < Number(filter.tucMin)) return false;
+        if (filter.tucMax && t.tuc > Number(filter.tucMax)) return false;
+        // 일반 옵션 필터 (inc로 시작)
+        for (const key in filter) {
+          if (
+            key.endsWith("Min") &&
+            key !== "priceMin" &&
+            key !== "scrollMin" &&
+            key !== "tucMin" &&
+            key.startsWith("inc")
+          ) {
+            const optKey = key.replace(/Min$/, "");
+            if (
+              t.options &&
+              filter[key] !== undefined &&
+              filter[key] !== "" &&
+              (t.options[optKey] ?? 0) < Number(filter[key])
+            )
+              return false;
+          }
+          if (
+            key.endsWith("Max") &&
+            key !== "priceMax" &&
+            key !== "scrollMax" &&
+            key !== "tucMax" &&
+            key.startsWith("inc")
+          ) {
+            const optKey = key.replace(/Max$/, "");
+            if (
+              t.options &&
+              filter[key] !== undefined &&
+              filter[key] !== "" &&
+              (t.options[optKey] ?? 0) > Number(filter[key])
+            )
+              return false;
+          }
+        }
+        // 잠재옵션 필터 (inc로 시작하지 않음)
+        for (const key in filter) {
+          if (key.endsWith("Min") && !key.startsWith("inc")) {
+            const optKey = key.replace(/Min$/, "");
+            if (
+              t.potentialOptions &&
+              filter[key] !== undefined &&
+              filter[key] !== "" &&
+              (t.potentialOptions[optKey] ?? 0) < Number(filter[key])
+            )
+              return false;
+          }
+          if (key.endsWith("Max") && !key.startsWith("inc")) {
+            const optKey = key.replace(/Max$/, "");
+            if (
+              t.potentialOptions &&
+              filter[key] !== undefined &&
+              filter[key] !== "" &&
+              (t.potentialOptions[optKey] ?? 0) > Number(filter[key])
+            )
+              return false;
+          }
+        }
+        return true;
+      });
+    }
     if (sortType === "latest") {
       arr = [...arr].sort(
         (a: any, b: any) =>
@@ -70,7 +153,7 @@ export default function TradeListPanel({
       arr = [...arr].sort((a: any, b: any) => b.itemPrice - a.itemPrice);
     }
     return arr;
-  }, [trades, showPendingOnly, sortType]);
+  }, [trades, showPendingOnly, sortType, filter]);
   const sellTrades = filteredTrades.filter((t: any) => t.type === "SELL");
   const buyTrades = filteredTrades.filter((t: any) => t.type === "BUY");
 
@@ -271,8 +354,15 @@ export default function TradeListPanel({
                     {tag}
                   </span>
                 ))}
+
                 <span className="bg-gray-300 dark:bg-gray-700 text-black dark:text-white text-[11px] px-1.5 py-0.5 rounded">
-                  월드: {trade.tradeWorld}
+                  업횟 {trade.upgradeCount}
+                </span>
+                <span className="bg-gray-300 dark:bg-gray-700 text-black dark:text-white text-[11px] px-1.5 py-0.5 rounded">
+                  {trade.tuc} 작
+                </span>
+                <span className="bg-gray-300 dark:bg-gray-700 text-black dark:text-white text-[11px] px-1.5 py-0.5 rounded">
+                  {trade.tradeWorld}
                 </span>
                 <span className="bg-gray-300 dark:bg-gray-700 text-black dark:text-white text-[11px] px-1.5 py-0.5 rounded">
                   흥정
@@ -281,9 +371,6 @@ export default function TradeListPanel({
                     : trade.haggling === "IMPOSSIBLE"
                     ? "불가"
                     : "제안받음"}
-                </span>
-                <span className="bg-gray-300 dark:bg-gray-700 text-black dark:text-white text-[11px] px-1.5 py-0.5 rounded">
-                  {trade.upgradeCount}작
                 </span>
                 {trade.comment && (
                   <span className="relative bg-gray-200 dark:bg-zinc-800 text-black dark:text-white text-[11px] px-1.5 py-0.5 rounded truncate max-w-[120px]">
@@ -395,6 +482,9 @@ export default function TradeListPanel({
                 </span>
                 <span className="bg-gray-300 dark:bg-gray-700 text-black dark:text-white text-[11px] px-1.5 py-0.5 rounded">
                   {trade.upgradeCount}작
+                </span>
+                <span className="bg-gray-300 dark:bg-gray-700 text-black dark:text-white text-[11px] px-1.5 py-0.5 rounded">
+                  {trade.tuc} 업
                 </span>
                 {trade.comment && (
                   <span className="relative bg-gray-200 dark:bg-zinc-800 text-black dark:text-white text-[11px] px-1.5 py-0.5 rounded truncate max-w-[120px]">
