@@ -38,7 +38,8 @@ export default function TradeRegisterPage({
   const [type, setType] = useState("SELL");
   const [price, setPrice] = useState("");
   const [haggling, setHaggling] = useState("IMPOSSIBLE");
-  const [prefferedWorld, setPrefferedWorld] = useState("미선택");
+  const [quantity, setQuantity] = useState("1");
+  const [prefferedWorld, setPrefferedWorld] = useState("아무데나");
   const [comment, setComment] = useState("");
   const [agree, setAgree] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -189,6 +190,7 @@ export default function TradeRegisterPage({
             tradeWorld: prefferedWorld,
             comment,
             coin,
+            quantity: Number(quantity) > 0 ? Number(quantity) : 1,
           }
         : {
             itemId: item.itemId,
@@ -207,6 +209,7 @@ export default function TradeRegisterPage({
             tradeWorld: prefferedWorld,
             comment,
             coin,
+            quantity: Number(quantity) > 0 ? Number(quantity) : 1,
           };
 
     console.log("Submitting item:", reqData);
@@ -300,6 +303,18 @@ export default function TradeRegisterPage({
       {/* 가격, 흥정, 월드, 코멘트 */}
       <div className="mb-4 p-4 rounded bg-lightBg dark:bg-darkBg border border-gray-300 dark:border-zinc-700 flex flex-col gap-3">
         <div>
+          <label className="font-bold text-sm">수량</label>
+          <input
+            type="number"
+            min={1}
+            value={quantity}
+            onChange={(e) => {
+              const v = e.target.value.replace(/[^0-9]/g, "");
+              setQuantity(v);
+            }}
+            placeholder="1"
+            className="w-full border rounded px-2 py-1 bg-white dark:bg-zinc-800 mt-1 mb-2"
+          />
           <label className="font-bold text-sm">가격</label>
           <input
             type="number"

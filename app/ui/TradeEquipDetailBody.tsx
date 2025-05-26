@@ -219,13 +219,7 @@ export default function TradeEquipDetailBody({
           <span style={{ color: "#fff" }}>업그레이드 가능 횟수 : </span>
           <span>{merged.tuc}</span>
         </div>
-        {/* trade의 업그레이드 횟수 */}
-        {trade.upgradeCount !== undefined && (
-          <div>
-            <span style={{ color: "#fff" }}>업그레이드 횟수 : </span>
-            <span>{trade.upgradeCount}</span>
-          </div>
-        )}
+
         {/* 잠재옵션 */}
         {potentialOptions && Object.keys(potentialOptions).length > 0 && (
           <>

@@ -324,25 +324,12 @@ export default function ItemFilter({
     );
   }
 
-  // 필터 초기화 함수
+  // 필터 초기화(되돌리기) 함수: 완전 해제
   function handleReset() {
-    // 가격, 작횟수, 가능 업횟수, 옵션, 잠재옵션 모두 초기값으로
-    const base: any = {
-      priceMin: "0",
-      priceMax: "1000000000",
-      scrollMin: "0",
-      scrollMax: (item.tuc || 0).toString(),
-      tucMin: "0",
-      tucMax: (item.tuc || 0).toString(),
-    };
-    getIncOptions().forEach((key) => {
-      const value = item.options?.[key] ?? 0;
-      base[key + "Min"] = value.toString();
-      base[key + "Max"] = value.toString();
-    });
-    setFilters(base);
+    setFilters({});
     setAddedOptionKeys([]);
-    if (onApply) onApply(base);
+    setAddedPotentialKeys([]);
+    if (onApply) onApply({});
   }
 
   // 렌더링만 분기
@@ -441,17 +428,7 @@ export default function ItemFilter({
               <button
                 className="p-1 rounded hover:bg-blue-100 dark:hover:bg-zinc-700"
                 title="필터 초기화"
-                onClick={() => {
-                  setFilters({
-                    priceMin: "0",
-                    priceMax: "1000000000",
-                  });
-                  if (onApply)
-                    onApply({
-                      priceMin: "0",
-                      priceMax: "1000000000",
-                    });
-                }}
+                onClick={handleReset}
               >
                 <svg width="20" height="20" fill="none" viewBox="0 0 20 20">
                   <circle cx="10" cy="10" r="10" fill="#2563eb" />

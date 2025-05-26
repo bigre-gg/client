@@ -362,7 +362,7 @@ export default function TradeListPanel({
                 )
               }
             >
-              가격순{sortType === "price-asc" ? " ▲" : " ▼"}
+              가격순{sortType === "price-asc" ? "▼" : " ▲"}
             </button>
           </div>
           <button
@@ -471,7 +471,7 @@ export default function TradeListPanel({
                     )}
                   </span>
                   <span className="text-xs text-gray-500 dark:text-gray-300">
-                    {trade.count ? `${trade.count}개` : "1개"}
+                    {trade.quantity ? `${trade.quantity}개` : "1개"}
                   </span>
                 </div>
                 <div className="flex flex-col items-center ml-2">
@@ -487,7 +487,7 @@ export default function TradeListPanel({
                     className="w-5 h-5 rounded-full"
                     alt="avatar"
                   />
-                  <span className="text-xs font-bold truncate mt-0 text-black dark:text-white">
+                  <span className="text-xs text-gray-400 truncate mt-0 text-black">
                     {trade.userGlobalName}
                   </span>
                 </div>
@@ -651,7 +651,7 @@ export default function TradeListPanel({
                     )}
                   </span>
                   <span className="text-xs text-gray-500 dark:text-gray-300">
-                    {trade.count ? `${trade.count}개` : "1개"}
+                    {trade.quantity ? `${trade.quantity}개` : "1개"}
                   </span>
                 </div>
                 <div className="flex flex-col items-center ml-2">
@@ -710,7 +710,7 @@ export default function TradeListPanel({
                   </>
                 )}
                 <span className="bg-gray-300 dark:bg-gray-700 text-black dark:text-white text-[11px] px-1.5 py-0.5 rounded">
-                  월드: {trade.tradeWorld}
+                  {trade.tradeWorld}
                 </span>
                 <span className="bg-gray-300 dark:bg-gray-700 text-black dark:text-white text-[11px] px-1.5 py-0.5 rounded">
                   흥정
