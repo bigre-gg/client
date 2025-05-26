@@ -82,12 +82,14 @@ export interface TradeEquipDetailBodyProps {
   item: any; // baseItem
   trade: any; // trade row
   cardSize?: number;
+  readOnly?: boolean;
 }
 
 export default function TradeEquipDetailBody({
   item,
   trade,
   cardSize = 320,
+  readOnly,
 }: TradeEquipDetailBodyProps) {
   // trade의 옵션/업횟/잠재옵션/커스텀옵션을 우선 적용
   const merged = {

@@ -1,0 +1,27 @@
+import { NextRequest, NextResponse } from "next/server";
+
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const { id } = params;
+  if (!id) {
+    return new NextResponse("id is required", { status: 400 });
+  }
+  const backendRes = await fetch(`http://localhost:8000/trades/${id}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      cookie: req.headers.get("cookie") || "",
+    },
+    credentials: "include",
+  });
+  if (!backendRes.ok) {
+    const text = await backendRes.text();
+    return new NextResponse(`Failed to fetch trade: ${text}`, {
+      status: backendRes.status,
+    });
+  }
+  const result = await backendRes.json();
+  return NextResponse.json(result);
+}

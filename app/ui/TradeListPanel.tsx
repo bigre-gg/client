@@ -3,6 +3,7 @@ import ItemIcon from "@/app/ui/ItemIcon";
 import { useRouter } from "next/navigation";
 import TradeEquipDetailBody from "@/app/ui/TradeEquipDetailBody";
 import ItemDetailBody from "@/app/ui/item-detail-body";
+import NonEquipItemDetail from "@/app/ui/NonEquipItemDetail";
 
 interface TradeListPanelProps {
   itemId: number;
@@ -201,6 +202,13 @@ function TradeDetailModal({
               <TradeEquipDetailBody
                 item={baseItem}
                 trade={trade}
+                cardSize={120}
+              />
+            ) : trade.itemType === "OTHERS" ? (
+              <NonEquipItemDetail
+                itemId={baseItem.itemId}
+                name={baseItem.name}
+                description={(baseItem as any).description ?? ""}
                 cardSize={120}
               />
             ) : (
