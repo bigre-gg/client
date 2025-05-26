@@ -198,7 +198,7 @@ export default function TradeDetailPage() {
           className="w-20 h-20 rounded-full mb-3 border-2 border-blue-500 mt-8"
           alt="avatar"
         />
-        <div className="text-lg font-bold text-black dark:text-white mb-1">
+        <div className="text-lg text-black dark:text-white mb-1">
           {trade.userGlobalName}
         </div>
         <div className="text-sm text-gray-500 mb-1">
@@ -267,7 +267,7 @@ export default function TradeDetailPage() {
             : baseItem && <ItemDetailBody item={baseItem} cardSize={320} />}
         </div>
         {/* 거래 정보 카드 (TradeListPanel 모달 스타일) */}
-        <div className="mt-6 flex flex-col items-center justify-center bg-[#23272f] rounded-xl p-4 shadow border border-gray-700 max-w-xs mx-auto w-full relative">
+        <div className="mt-6 flex flex-col items-center justify-center bg-gray-100 dark:bg-[#23272f] rounded-xl p-4 shadow border border-gray-700 max-w-xs mx-auto w-full relative">
           {/* 가격/코인/수량 */}
           <div className="flex flex-col items-center mb-2">
             <span className="font-bold text-lg flex items-center gap-1">
@@ -320,11 +320,13 @@ export default function TradeDetailPage() {
                 </span>
               )}
             </span>
-            <span className="text-white text-sm">{trade.quantity || 1}개</span>
+            <span className="text-black dark:text-white text-sm">
+              {trade.quantity || 1}개
+            </span>
           </div>
           {/* 코멘트 */}
           {trade.comment && (
-            <div className="mb-2 text-sm text-center text-gray-200 font-semibold break-words bg-[#181c23] rounded-lg px-3 py-2">
+            <div className="mb-2 text-sm text-center text-gray-800 dark:text-gray-200 font-semibold break-words bg-gray-100 dark:bg-[#181c23] rounded-lg px-3 py-2">
               {trade.comment}
             </div>
           )}
@@ -355,21 +357,21 @@ export default function TradeDetailPage() {
               </span>
             ))}
             {trade.upgradeCount !== undefined && (
-              <span className="bg-gray-300 dark:bg-gray-700 text-black dark:text-white text-[15px] px-2 py-1 rounded">
+              <span className="bg-gray-200 dark:bg-gray-700 text-black dark:text-white text-[15px] px-2 py-1 rounded">
                 {trade.upgradeCount} 작
               </span>
             )}
             {trade.tuc !== undefined && (
-              <span className="bg-gray-300 dark:bg-gray-700 text-black dark:text-white text-[15px] px-2 py-1 rounded">
+              <span className="bg-gray-200 dark:bg-gray-700 text-black dark:text-white text-[15px] px-2 py-1 rounded">
                 업횟 {trade.tuc}
               </span>
             )}
             {trade.tradeWorld && (
-              <span className="bg-gray-300 dark:bg-gray-700 text-black dark:text-white text-[15px] px-2 py-1 rounded">
+              <span className="bg-gray-200 dark:bg-gray-700 text-black dark:text-white text-[15px] px-2 py-1 rounded">
                 {trade.tradeWorld}
               </span>
             )}
-            <span className="bg-gray-300 dark:bg-gray-700 text-black dark:text-white text-[15px] px-2 py-1 rounded">
+            <span className="bg-gray-200 dark:bg-gray-700 text-black dark:text-white text-[15px] px-2 py-1 rounded">
               {trade.haggling === "IMPOSSIBLE"
                 ? "흥정 불가"
                 : trade.haggling === "POSSIBLE"
@@ -382,7 +384,7 @@ export default function TradeDetailPage() {
             <div className="flex w-full gap-2">
               <input
                 type="text"
-                className="flex-1 px-2 py-1 rounded bg-zinc-800 text-white border border-zinc-600 text-sm"
+                className="flex-1 px-2 py-1 rounded bg-white dark:bg-zinc-800 text-black dark:text-white border border-gray-300 dark:border-zinc-600 text-sm"
                 value={`@${trade.username || trade.userGlobalName} ${
                   baseItem?.name || trade.itemName || "아이템"
                 } ${trade.itemPrice?.toLocaleString() || "-"}${

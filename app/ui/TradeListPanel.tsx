@@ -161,7 +161,7 @@ function TradeDetailModal({
       onClick={onClose}
     >
       <div
-        className="relative bg-[#23272f] dark:bg-[#23272f] rounded-2xl shadow-2xl p-0 flex flex-col min-w-[340px] max-w-[95vw] w-[370px] border border-gray-700"
+        className="relative bg-gray-100 dark:bg-[#23272f] rounded-2xl shadow-2xl p-0 flex flex-col min-w-[340px] max-w-[95vw] w-[370px] border border-gray-700"
         onClick={(e) => e.stopPropagation()}
       >
         {/* 상단: 팝니다/삽니다, 유저 정보, X버튼 */}
@@ -183,7 +183,7 @@ function TradeDetailModal({
               {getTimeAgo(trade.createdAt)}
             </span>
             <img src={avatar} className="w-8 h-8 rounded-full" alt="avatar" />
-            <span className="text-xs font-bold truncate text-white max-w-[90px]">
+            <span className="text-xs truncate max-w-[90px]">
               {trade.userGlobalName}
             </span>
           </div>
@@ -217,7 +217,7 @@ function TradeDetailModal({
           </div>
           {/* 가격/수량 - 가운데 정렬 */}
           <div className="flex flex-col items-center justify-center mb-2 px-0">
-            <span className="text-400 font-bold text-lg flex items-center gap-1">
+            <span className="text-black dark:text-white font-bold text-lg flex items-center gap-1">
               {trade.itemPrice?.toLocaleString() || "-"}
               <img
                 src="/meso.png"
@@ -272,11 +272,13 @@ function TradeDetailModal({
                 </span>
               )}
             </span>
-            <span className="text-white text-sm">{trade.quantity || 1}개</span>
+            <span className="text-black dark:text-white text-sm">
+              {trade.quantity || 1}개
+            </span>
           </div>
           {/* 코멘트 */}
           {trade.comment && (
-            <div className="mb-2 text-sm text-center text-gray-200 font-semibold break-words bg-[#181c23] rounded-lg px-3 py-2">
+            <div className="mb-2 text-sm text-center text-gray-800 dark:text-gray-200 font-semibold break-words bg-gray-100 dark:bg-[#181c23] rounded-lg px-3 py-2">
               {trade.comment}
             </div>
           )}
@@ -306,16 +308,16 @@ function TradeDetailModal({
                 {tag}
               </span>
             ))}
-            <span className="bg-gray-300 dark:bg-gray-700 text-black dark:text-white text-[15px] px-2 py-1 rounded">
+            <span className="bg-gray-200 dark:bg-gray-700 text-black dark:text-white text-[15px] px-2 py-1 rounded">
               {trade.upgradeCount} 작
             </span>
-            <span className="bg-gray-300 dark:bg-gray-700 text-black dark:text-white text-[15px] px-2 py-1 rounded">
+            <span className="bg-gray-200 dark:bg-gray-700 text-black dark:text-white text-[15px] px-2 py-1 rounded">
               업횟 {trade.tuc}
             </span>
-            <span className="bg-gray-300 dark:bg-gray-700 text-black dark:text-white text-[15px] px-2 py-1 rounded">
+            <span className="bg-gray-200 dark:bg-gray-700 text-black dark:text-white text-[15px] px-2 py-1 rounded">
               {trade.tradeWorld}
             </span>
-            <span className="bg-gray-300 dark:bg-gray-700 text-black dark:text-white text-[15px] px-2 py-1 rounded">
+            <span className="bg-gray-200 dark:bg-gray-700 text-black dark:text-white text-[15px] px-2 py-1 rounded">
               {trade.haggling === "IMPOSSIBLE"
                 ? "흥정 불가"
                 : trade.haggling === "POSSIBLE"
@@ -753,7 +755,7 @@ export default function TradeListPanel({
                     className="w-5 h-5 rounded-full"
                     alt="avatar"
                   />
-                  <span className="text-xs font-bold truncate mt-0 text-black dark:text-white">
+                  <span className="text-xs truncate mt-0">
                     {trade.userGlobalName}
                   </span>
                 </div>
@@ -787,18 +789,18 @@ export default function TradeListPanel({
                         {tag}
                       </span>
                     ))}
-                    <span className="bg-gray-300 dark:bg-gray-700 text-black dark:text-white text-[11px] px-1.5 py-0.5 rounded">
+                    <span className="bg-gray-200 dark:bg-gray-700 text-black dark:text-white text-[11px] px-1.5 py-0.5 rounded">
                       {trade.upgradeCount} 작
                     </span>
-                    <span className="bg-gray-300 dark:bg-gray-700 text-black dark:text-white text-[11px] px-1.5 py-0.5 rounded">
+                    <span className="bg-gray-200 dark:bg-gray-700 text-black dark:text-white text-[11px] px-1.5 py-0.5 rounded">
                       업횟 {trade.tuc}
                     </span>
                   </>
                 )}
-                <span className="bg-gray-300 dark:bg-gray-700 text-black dark:text-white text-[11px] px-1.5 py-0.5 rounded">
+                <span className="bg-gray-200 dark:bg-gray-700 text-black dark:text-white text-[11px] px-1.5 py-0.5 rounded">
                   {trade.tradeWorld}
                 </span>
-                <span className="bg-gray-300 dark:bg-gray-700 text-black dark:text-white text-[11px] px-1.5 py-0.5 rounded">
+                <span className="bg-gray-200 dark:bg-gray-700 text-black dark:text-white text-[11px] px-1.5 py-0.5 rounded">
                   흥정
                   {trade.haggling === "POSSIBLE"
                     ? "가능"
@@ -934,7 +936,7 @@ export default function TradeListPanel({
                     className="w-5 h-5 rounded-full"
                     alt="avatar"
                   />
-                  <span className="text-xs font-bold truncate mt-0 text-black dark:text-white">
+                  <span className="text-xs truncate mt-0">
                     {trade.userGlobalName}
                   </span>
                 </div>
@@ -968,18 +970,18 @@ export default function TradeListPanel({
                         {tag}
                       </span>
                     ))}
-                    <span className="bg-gray-300 dark:bg-gray-700 text-black dark:text-white text-[11px] px-1.5 py-0.5 rounded">
+                    <span className="bg-gray-200 dark:bg-gray-700 text-black dark:text-white text-[11px] px-1.5 py-0.5 rounded">
                       {trade.upgradeCount} 작
                     </span>
-                    <span className="bg-gray-300 dark:bg-gray-700 text-black dark:text-white text-[11px] px-1.5 py-0.5 rounded">
+                    <span className="bg-gray-200 dark:bg-gray-700 text-black dark:text-white text-[11px] px-1.5 py-0.5 rounded">
                       업횟 {trade.tuc}
                     </span>
                   </>
                 )}
-                <span className="bg-gray-300 dark:bg-gray-700 text-black dark:text-white text-[11px] px-1.5 py-0.5 rounded">
+                <span className="bg-gray-200 dark:bg-gray-700 text-black dark:text-white text-[11px] px-1.5 py-0.5 rounded">
                   {trade.tradeWorld}
                 </span>
-                <span className="bg-gray-300 dark:bg-gray-700 text-black dark:text-white text-[11px] px-1.5 py-0.5 rounded">
+                <span className="bg-gray-200 dark:bg-gray-700 text-black dark:text-white text-[11px] px-1.5 py-0.5 rounded">
                   흥정
                   {trade.haggling === "POSSIBLE"
                     ? "가능"
