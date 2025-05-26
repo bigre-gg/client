@@ -160,7 +160,7 @@ export default function ItemFilter({
   const isOthers = item && (item as any).type === "OTHERS";
 
   // 가격 필터 state (공통)
-  const [filters, setFilters] = useState<{ [key: string]: any }>(() => {
+  const getDefaultFilters = () => {
     if (isOthers) {
       return {
         priceMin: "0",
@@ -184,7 +184,10 @@ export default function ItemFilter({
       });
     }
     return base;
-  });
+  };
+  const [filters, setFilters] = useState<{ [key: string]: any }>(
+    getDefaultFilters
+  );
 
   // 나머지 장비용 state (OTHERS면 사용 안함)
   const [addedOptionKeys, setAddedOptionKeys] = useState<string[]>([]);
@@ -326,10 +329,10 @@ export default function ItemFilter({
 
   // 필터 초기화(되돌리기) 함수: 완전 해제
   function handleReset() {
-    setFilters({});
+    setFilters(getDefaultFilters());
     setAddedOptionKeys([]);
     setAddedPotentialKeys([]);
-    if (onApply) onApply({});
+    if (onApply) onApply(getDefaultFilters());
   }
 
   // 렌더링만 분기

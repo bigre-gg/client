@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, useRef } from "react";
 import ItemIcon from "@/app/ui/ItemIcon";
 import { useRouter } from "next/navigation";
 import TradeEquipDetailBody from "@/app/ui/TradeEquipDetailBody";
+import ItemDetailBody from "@/app/ui/item-detail-body";
 
 interface TradeListPanelProps {
   itemId: number;
@@ -128,6 +129,225 @@ const POTENTIAL_OPTION_TRANSLATIONS: Record<string, string> = {
   mpReduceP: "모든 스킬의 MP 소모",
 };
 
+// 모달 오버레이 컴포넌트
+function TradeDetailModal({
+  trade,
+  baseItem,
+  onClose,
+  onBuy,
+  getOptionTags,
+  getPotentialTags,
+  getCustomTags,
+}: {
+  trade: any;
+  baseItem: any;
+  onClose: () => void;
+  onBuy: (tradeId: string) => void;
+  getOptionTags: (base: any, trade: any) => string[];
+  getPotentialTags: (trade: any) => string[];
+  getCustomTags: (trade: any) => string[];
+}) {
+  if (!trade) return null;
+  const isEquip = (trade.itemType || baseItem.type) === "EQUIP";
+  // 유저 정보
+  const avatar =
+    trade.userAvatar && trade.userDiscordId
+      ? `https://cdn.discordapp.com/avatars/${trade.userDiscordId}/${trade.userAvatar}.png`
+      : `https://cdn.discordapp.com/embed/avatars/0.png`;
+  return (
+    <div
+      className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/60"
+      onClick={onClose}
+    >
+      <div
+        className="relative bg-[#23272f] dark:bg-[#23272f] rounded-2xl shadow-2xl p-0 flex flex-col min-w-[340px] max-w-[95vw] w-[370px] border border-gray-700"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* 상단: 팝니다/삽니다, 유저 정보, X버튼 */}
+        <div className="flex items-center justify-between px-5 pt-5 pb-2">
+          <div className="flex items-center flex-1">
+            <span
+              className={`font-bold text-base px-3 py-1 rounded-xl ${
+                trade.type === "SELL"
+                  ? "bg-blue-600 text-white"
+                  : "bg-green-600 text-white"
+              }`}
+            >
+              {trade.type === "SELL" ? "팝니다" : "삽니다"}
+            </span>
+          </div>
+          {/* 유저 정보 */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-gray-400 whitespace-nowrap">
+              {getTimeAgo(trade.createdAt)}
+            </span>
+            <img src={avatar} className="w-8 h-8 rounded-full" alt="avatar" />
+            <span className="text-xs font-bold truncate text-white max-w-[90px]">
+              {trade.userGlobalName}
+            </span>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-2xl text-gray-400 hover:text-red-500 font-bold ml-2"
+          >
+            ×
+          </button>
+        </div>
+        {/* 카드 본문 */}
+        <div className="px-5 pb-2 pt-1">
+          {/* 아이템 디테일 카드 */}
+          <div className="flex justify-center mb-2">
+            {isEquip ? (
+              <TradeEquipDetailBody
+                item={baseItem}
+                trade={trade}
+                cardSize={120}
+              />
+            ) : (
+              <ItemDetailBody item={baseItem} cardSize={120} />
+            )}
+          </div>
+          {/* 가격/수량 - 가운데 정렬 */}
+          <div className="flex flex-col items-center justify-center mb-2 px-0">
+            <span className="text-400 font-bold text-lg flex items-center gap-1">
+              {trade.itemPrice?.toLocaleString() || "-"}
+              <img
+                src="/meso.png"
+                alt="메소"
+                style={{
+                  width: 20,
+                  height: 20,
+                  display: "inline-block",
+                  marginLeft: 2,
+                }}
+              />
+              {shouldShowCoin(trade.coin) && (
+                <span className="flex items-center gap-1 ml-2">
+                  <span className="text-gray-500 font-bold">or</span>
+                  {(() => {
+                    const { g, s, b } = parseCoinString(trade.coin);
+                    return (
+                      <span className="flex items-center gap-1">
+                        {g > 0 && (
+                          <>
+                            <img
+                              src="/goldCoin.png"
+                              alt="Gold"
+                              className="w-5 h-5 inline-block"
+                            />
+                            {g}
+                          </>
+                        )}
+                        {s > 0 && (
+                          <>
+                            <img
+                              src="/silverCoin.png"
+                              alt="Silver"
+                              className="w-5 h-5 inline-block"
+                            />
+                            {s}
+                          </>
+                        )}
+                        {b > 0 && (
+                          <>
+                            <img
+                              src="/bronzeCoin.png"
+                              alt="Bronze"
+                              className="w-5 h-5 inline-block"
+                            />
+                            {b}
+                          </>
+                        )}
+                      </span>
+                    );
+                  })()}
+                </span>
+              )}
+            </span>
+            <span className="text-white text-sm">{trade.quantity || 1}개</span>
+          </div>
+          {/* 코멘트 */}
+          {trade.comment && (
+            <div className="mb-2 text-sm text-center text-gray-200 font-semibold break-words bg-[#181c23] rounded-lg px-3 py-2">
+              {trade.comment}
+            </div>
+          )}
+          {/* 태그들 (흥정 태그 포함) */}
+          <div className="flex flex-wrap gap-2 justify-center mb-2 mt-2">
+            {getOptionTags(baseItem, trade).map((tag: string, idx: number) => (
+              <span
+                key={idx}
+                className="bg-blue-600 dark:bg-blue-700 text-white text-[15px] px-2 py-1 rounded"
+              >
+                {tag}
+              </span>
+            ))}
+            {getPotentialTags(trade).map((tag: string, idx: number) => (
+              <span
+                key={"potential-" + idx}
+                className="bg-purple-600 dark:bg-purple-700 text-white text-[15px] px-2 py-1 rounded"
+              >
+                {tag}
+              </span>
+            ))}
+            {getCustomTags(trade).map((tag: string, idx: number) => (
+              <span
+                key={"custom-" + idx}
+                className="bg-purple-600 dark:bg-purple-700 text-white text-[15px] px-2 py-1 rounded"
+              >
+                {tag}
+              </span>
+            ))}
+            <span className="bg-gray-300 dark:bg-gray-700 text-black dark:text-white text-[15px] px-2 py-1 rounded">
+              {trade.upgradeCount} 작
+            </span>
+            <span className="bg-gray-300 dark:bg-gray-700 text-black dark:text-white text-[15px] px-2 py-1 rounded">
+              업횟 {trade.tuc}
+            </span>
+            <span className="bg-gray-300 dark:bg-gray-700 text-black dark:text-white text-[15px] px-2 py-1 rounded">
+              {trade.tradeWorld}
+            </span>
+            <span className="bg-gray-300 dark:bg-gray-700 text-black dark:text-white text-[15px] px-2 py-1 rounded">
+              {trade.haggling === "IMPOSSIBLE"
+                ? "흥정 불가"
+                : trade.haggling === "POSSIBLE"
+                ? "흥정 가능"
+                : "제안 받음"}
+            </span>
+          </div>
+        </div>
+        {/* 하단 버튼 */}
+        <div className="flex justify-between items-center px-5 pb-5 pt-2 gap-2">
+          <button
+            onClick={onClose}
+            className="flex-1 py-2 rounded bg-gray-700 text-white font-bold text-base hover:bg-gray-600"
+          >
+            닫기
+          </button>
+          <button
+            onClick={() => onBuy(trade._id)}
+            className="flex-1 py-2 rounded bg-blue-600 text-white font-bold text-base hover:bg-blue-700 ml-2"
+          >
+            구매하기
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// 시간 표시 함수
+function getTimeAgo(dateStr: string) {
+  const now = new Date();
+  const date = new Date(dateStr);
+  const diff = (now.getTime() - date.getTime()) / 1000;
+  if (diff < 10) return `${Math.floor(diff)}초 전`;
+  if (diff < 60) return `${Math.floor(diff)}초 전`;
+  if (diff < 3600) return `${Math.floor(diff / 60)}분 전`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}시간 전`;
+  return `${Math.floor(diff / 86400)}일 전`;
+}
+
 export default function TradeListPanel({
   itemId,
   itemMeta,
@@ -142,6 +362,7 @@ export default function TradeListPanel({
     "latest" | "oldest" | "price-asc" | "price-desc"
   >("latest");
   const router = useRouter();
+  const [selectedTrade, setSelectedTrade] = useState<any>(null);
 
   // fetch trades if not provided
   useEffect(() => {
@@ -155,12 +376,51 @@ export default function TradeListPanel({
     console.log("TradeListPanel filter prop:", filter);
   }, [filter]);
 
+  // 기본 필터값과 현재 filter가 완전히 같으면(즉, 필터가 적용되지 않은 상태면) 전체를 보여주도록 처리
+  function isDefaultFilter(filterObj: any, baseItem: any) {
+    // item-filter.tsx의 getDefaultFilters와 동일하게 맞춰야 함
+    if (!baseItem) return true;
+    const isOthers = baseItem.type === "OTHERS";
+    if (isOthers) {
+      return (
+        filterObj &&
+        Object.keys(filterObj).length === 2 &&
+        filterObj.priceMin === "0" &&
+        filterObj.priceMax === "1000000000"
+      );
+    }
+    // 장비
+    const base: any = {
+      priceMin: "0",
+      priceMax: "1000000000",
+      scrollMin: "0",
+      scrollMax: (baseItem.tuc || 0).toString(),
+      tucMin: "0",
+      tucMax: (baseItem.tuc || 0).toString(),
+    };
+    if (baseItem.options) {
+      Object.keys(baseItem.options).forEach((key) => {
+        const value = baseItem.options?.[key] ?? 0;
+        base[key + "Min"] = value.toString();
+        base[key + "Max"] = value.toString();
+      });
+    }
+    // 모든 key, value가 동일해야 함
+    const keys = Object.keys(base);
+    if (!filterObj) return true;
+    if (Object.keys(filterObj).length !== keys.length) return false;
+    for (const k of keys) {
+      if (filterObj[k] !== base[k]) return false;
+    }
+    return true;
+  }
+
   // 정렬/필터
   const filteredTrades = useMemo(() => {
     let arr = trades;
     if (showPendingOnly) arr = arr.filter((t: any) => t.status === "PENDING");
-    // 필터 적용
-    if (filter) {
+    // 필터 적용: 기본값과 다를 때만 필터링
+    if (filter && !isDefaultFilter(filter, baseItem)) {
       arr = arr.filter((t: any) => {
         // 가격
         if (filter.priceMin && t.itemPrice < Number(filter.priceMin))
@@ -252,21 +512,10 @@ export default function TradeListPanel({
       arr = [...arr].sort((a: any, b: any) => b.itemPrice - a.itemPrice);
     }
     return arr;
-  }, [trades, showPendingOnly, sortType, filter]);
+  }, [trades, showPendingOnly, sortType, filter, baseItem]);
   const sellTrades = filteredTrades.filter((t: any) => t.type === "SELL");
   const buyTrades = filteredTrades.filter((t: any) => t.type === "BUY");
 
-  // 시간 표시 함수
-  function getTimeAgo(dateStr: string) {
-    const now = new Date();
-    const date = new Date(dateStr);
-    const diff = (now.getTime() - date.getTime()) / 1000;
-    if (diff < 10) return `${Math.floor(diff)}초 전`;
-    if (diff < 60) return `${Math.floor(diff)}초 전`;
-    if (diff < 3600) return `${Math.floor(diff / 60)}분 전`;
-    if (diff < 86400) return `${Math.floor(diff / 3600)}시간 전`;
-    return `${Math.floor(diff / 86400)}일 전`;
-  }
   // 디스코드 아바타 url
   function getDiscordAvatarUrl(
     userDiscordId: string,
@@ -313,6 +562,14 @@ export default function TradeListPanel({
     if (!trade.customOptions) return [];
     return trade.customOptions.map((opt: any) => `${opt.label} ${opt.value}`);
   }
+
+  const handleTradeClick = (trade: any) => setSelectedTrade(trade);
+  const handleCloseModal = () => setSelectedTrade(null);
+  const handleBuy = (tradeId: string) => {
+    // 상세페이지로 이동
+    router.push(`/trade/${tradeId}`);
+    setSelectedTrade(null);
+  };
 
   return (
     <div className="w-full min-w-0">
@@ -390,7 +647,8 @@ export default function TradeListPanel({
           {sellTrades.map((trade: any, i: number) => (
             <div
               key={trade._id}
-              className="rounded-lg bg-gray-100 dark:bg-[#23272f] p-1 mb-1 flex flex-col gap-0 shadow border border-gray-200 dark:border-[#2e3a4d] text-xs sm:text-[13px]"
+              className="rounded-lg bg-gray-100 dark:bg-[#23272f] p-1 mb-1 flex flex-col gap-0 shadow border border-gray-200 dark:border-[#2e3a4d] text-xs sm:text-[13px] cursor-pointer hover:ring-2 hover:ring-blue-400"
+              onClick={() => handleTradeClick(trade)}
             >
               <div className="flex items-center gap-2">
                 <div className="relative">
@@ -487,7 +745,7 @@ export default function TradeListPanel({
                     className="w-5 h-5 rounded-full"
                     alt="avatar"
                   />
-                  <span className="text-xs text-gray-400 truncate mt-0 text-black">
+                  <span className="text-xs font-bold truncate mt-0 text-black dark:text-white">
                     {trade.userGlobalName}
                   </span>
                 </div>
@@ -570,7 +828,8 @@ export default function TradeListPanel({
           {buyTrades.map((trade: any, i: number) => (
             <div
               key={trade._id}
-              className="rounded-lg bg-gray-100 dark:bg-[#23272f] p-1 mb-1 flex flex-col gap-0 shadow border border-gray-200 dark:border-[#2e3a4d] text-xs sm:text-[13px]"
+              className="rounded-lg bg-gray-100 dark:bg-[#23272f] p-1 mb-1 flex flex-col gap-0 shadow border border-gray-200 dark:border-[#2e3a4d] text-xs sm:text-[13px] cursor-pointer hover:ring-2 hover:ring-blue-400"
+              onClick={() => handleTradeClick(trade)}
             >
               <div className="flex items-center gap-2">
                 <div className="relative">
@@ -735,6 +994,18 @@ export default function TradeListPanel({
           ))}
         </div>
       </div>
+      {/* 거래 상세 모달 */}
+      {selectedTrade && (
+        <TradeDetailModal
+          trade={selectedTrade}
+          baseItem={baseItem}
+          onClose={handleCloseModal}
+          onBuy={handleBuy}
+          getOptionTags={getOptionTags}
+          getPotentialTags={getPotentialTags}
+          getCustomTags={getCustomTags}
+        />
+      )}
     </div>
   );
 }
