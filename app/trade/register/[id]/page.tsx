@@ -221,6 +221,7 @@ export default function TradeRegisterPage({
         credentials: "include",
       });
       if (!response.ok) throw new Error("등록 실패");
+
       alert("등록이 완료되었습니다.");
       router.push(`/item/${item.itemId}`);
     } catch (e) {

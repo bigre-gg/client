@@ -1,3 +1,4 @@
+"use client";
 import ItemIcon from "@/app/ui/ItemIcon";
 import { useState, useRef, useEffect } from "react";
 

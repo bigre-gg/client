@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useMemo, useState, useRef } from "react";
 import ItemIcon from "@/app/ui/ItemIcon";
 import { useRouter } from "next/navigation";
@@ -6,11 +8,13 @@ import ItemDetailBody from "@/app/ui/item-detail-body";
 import NonEquipItemDetail from "@/app/ui/NonEquipItemDetail";
 
 interface TradeListPanelProps {
-  itemId: number;
-  itemMeta: any;
-  baseItem?: any;
-  trades?: any[];
+  tradesWithBaseItem?: { trade: any; baseItem: any }[];
   showFilterBar?: boolean;
+  itemId?: number;
+  itemMeta?: any;
+  baseItem?: any;
+  baseItems?: any[];
+  trades?: any[];
   filter?: any;
 }
 
@@ -359,14 +363,16 @@ function getTimeAgo(dateStr: string) {
 }
 
 export default function TradeListPanel({
+  tradesWithBaseItem,
+  showFilterBar = true,
   itemId,
   itemMeta,
   baseItem,
+  baseItems,
   trades: propTrades,
-  showFilterBar = true,
   filter,
 }: TradeListPanelProps) {
-  const [trades, setTrades] = useState<any[]>(propTrades || []);
+  const [data, setData] = useState(tradesWithBaseItem || []);
   const [showPendingOnly, setShowPendingOnly] = useState(true);
   const [sortType, setSortType] = useState<
     "latest" | "oldest" | "price-asc" | "price-desc"
@@ -379,7 +385,7 @@ export default function TradeListPanel({
     if (propTrades) return;
     fetch(`/api/trades/all/${itemId}`)
       .then((res) => res.json())
-      .then((data) => setTrades(data || []));
+      .then((data) => setData(data || []));
   }, [itemId, propTrades]);
 
   useEffect(() => {
@@ -425,106 +431,62 @@ export default function TradeListPanel({
     return true;
   }
 
+  // TradeListPanel 내부에 아래 함수 추가
+  function getTrade(t: any, isProfileMode: boolean) {
+    return isProfileMode ? t.trade : t;
+  }
+  function getBaseItem(t: any, isProfileMode: boolean, baseItem: any) {
+    return isProfileMode ? t.baseItem : baseItem;
+  }
+
   // 정렬/필터
+  const isProfileMode = !!tradesWithBaseItem;
   const filteredTrades = useMemo(() => {
-    let arr = trades;
-    if (showPendingOnly) arr = arr.filter((t: any) => t.status === "PENDING");
-    // 필터 적용: 기본값과 다를 때만 필터링
-    if (filter && !isDefaultFilter(filter, baseItem)) {
-      arr = arr.filter((t: any) => {
-        // 가격
-        if (filter.priceMin && t.itemPrice < Number(filter.priceMin))
-          return false;
-        if (filter.priceMax && t.itemPrice > Number(filter.priceMax))
-          return false;
-        // 작횟수
-        if (filter.scrollMin && t.upgradeCount < Number(filter.scrollMin))
-          return false;
-        if (filter.scrollMax && t.upgradeCount > Number(filter.scrollMax))
-          return false;
-        // 가능 업횟수
-        if (filter.tucMin && t.tuc < Number(filter.tucMin)) return false;
-        if (filter.tucMax && t.tuc > Number(filter.tucMax)) return false;
-        // 일반 옵션 필터 (inc로 시작)
-        for (const key in filter) {
-          if (
-            key.endsWith("Min") &&
-            key !== "priceMin" &&
-            key !== "scrollMin" &&
-            key !== "tucMin" &&
-            key.startsWith("inc")
-          ) {
-            const optKey = key.replace(/Min$/, "");
-            if (
-              t.options &&
-              filter[key] !== undefined &&
-              filter[key] !== "" &&
-              (t.options[optKey] ?? 0) < Number(filter[key])
-            )
-              return false;
-          }
-          if (
-            key.endsWith("Max") &&
-            key !== "priceMax" &&
-            key !== "scrollMax" &&
-            key !== "tucMax" &&
-            key.startsWith("inc")
-          ) {
-            const optKey = key.replace(/Max$/, "");
-            if (
-              t.options &&
-              filter[key] !== undefined &&
-              filter[key] !== "" &&
-              (t.options[optKey] ?? 0) > Number(filter[key])
-            )
-              return false;
-          }
-        }
-        // 잠재옵션 필터 (inc로 시작하지 않음)
-        for (const key in filter) {
-          if (key.endsWith("Min") && !key.startsWith("inc")) {
-            const optKey = key.replace(/Min$/, "");
-            if (
-              t.potentialOptions &&
-              filter[key] !== undefined &&
-              filter[key] !== "" &&
-              (t.potentialOptions[optKey] ?? 0) < Number(filter[key])
-            )
-              return false;
-          }
-          if (key.endsWith("Max") && !key.startsWith("inc")) {
-            const optKey = key.replace(/Max$/, "");
-            if (
-              t.potentialOptions &&
-              filter[key] !== undefined &&
-              filter[key] !== "" &&
-              (t.potentialOptions[optKey] ?? 0) > Number(filter[key])
-            )
-              return false;
-          }
-        }
-        return true;
-      });
-    }
+    let arr = data || [];
+    arr = arr.filter((t: any) =>
+      isProfileMode ? t && t.trade && t.trade.createdAt : t && t.createdAt
+    );
     if (sortType === "latest") {
-      arr = [...arr].sort(
-        (a: any, b: any) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      );
+      arr = [...arr].sort((a: any, b: any) => {
+        const aTime = isProfileMode
+          ? new Date(a.trade.createdAt).getTime()
+          : new Date(a.createdAt).getTime();
+        const bTime = isProfileMode
+          ? new Date(b.trade.createdAt).getTime()
+          : new Date(b.createdAt).getTime();
+        return bTime - aTime;
+      });
     } else if (sortType === "oldest") {
-      arr = [...arr].sort(
-        (a: any, b: any) =>
-          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-      );
+      arr = [...arr].sort((a: any, b: any) => {
+        const aTime = isProfileMode
+          ? new Date(a.trade.createdAt).getTime()
+          : new Date(a.createdAt).getTime();
+        const bTime = isProfileMode
+          ? new Date(b.trade.createdAt).getTime()
+          : new Date(b.createdAt).getTime();
+        return aTime - bTime;
+      });
     } else if (sortType === "price-asc") {
-      arr = [...arr].sort((a: any, b: any) => a.itemPrice - b.itemPrice);
+      arr = [...arr].sort((a: any, b: any) =>
+        isProfileMode
+          ? a.trade.itemPrice - b.trade.itemPrice
+          : a.itemPrice - b.itemPrice
+      );
     } else if (sortType === "price-desc") {
-      arr = [...arr].sort((a: any, b: any) => b.itemPrice - a.itemPrice);
+      arr = [...arr].sort((a: any, b: any) =>
+        isProfileMode
+          ? b.trade.itemPrice - a.trade.itemPrice
+          : b.itemPrice - a.itemPrice
+      );
     }
     return arr;
-  }, [trades, showPendingOnly, sortType, filter, baseItem]);
-  const sellTrades = filteredTrades.filter((t: any) => t.type === "SELL");
-  const buyTrades = filteredTrades.filter((t: any) => t.type === "BUY");
+  }, [data, sortType, filter, baseItem, tradesWithBaseItem]);
+  const sellTrades = filteredTrades.filter(
+    (t: any) => (isProfileMode ? t.trade.type : t.type) === "SELL"
+  );
+  const buyTrades = filteredTrades.filter(
+    (t: any) => (isProfileMode ? t.trade.type : t.type) === "BUY"
+  );
 
   // 디스코드 아바타 url
   function getDiscordAvatarUrl(
@@ -539,7 +501,7 @@ export default function TradeListPanel({
   }
   // 옵션 비교 태그
   function getOptionTags(base: any, trade: any) {
-    if (!base || !trade) return [];
+    if (!base || !trade || !base.options) return [];
     const tags = [];
     for (const key in base.options) {
       const baseVal = base.options[key] || 0;
@@ -550,10 +512,12 @@ export default function TradeListPanel({
       else if (diff < 0) tags.push(`${label} ${diff}`);
     }
     // trade.options에만 있는 추가 옵션
-    for (const key in trade.options) {
-      if (!(key in base.options)) {
-        const label = OPTION_TRANSLATIONS[key] || key;
-        tags.push(`${label} +${trade.options[key]}`);
+    if (trade.options) {
+      for (const key in trade.options) {
+        if (!(key in (base.options || {}))) {
+          const label = OPTION_TRANSLATIONS[key] || key;
+          tags.push(`${label} +${trade.options[key]}`);
+        }
       }
     }
     return tags;
@@ -642,373 +606,431 @@ export default function TradeListPanel({
       )}
       <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full h-[700px] max-h-[700px]">
         {/* 팝니다 */}
-        <div className="flex-1 bg-white dark:bg-[#181c23] rounded-lg p-2 flex flex-col overflow-y-auto min-w-0 sm:min-w-[320px] sm:max-w-[500px] border border-gray-300 dark:border-zinc-700 mb-2 sm:mb-0">
+        <div className="flex-1 bg-white dark:bg-[#181c23] rounded-lg p-2 flex flex-col min-w-0 sm:min-w-[320px] sm:max-w-[500px] border border-gray-300 dark:border-zinc-700 mb-2 sm:mb-0">
           <div
             className="font-bold mb-2 text-white text-left text-lg px-4 py-2 rounded-t-lg"
             style={{ background: "#274a84" }}
           >
             팝니다
           </div>
-          {sellTrades.length === 0 && (
-            <div className="text-gray-300 text-center">
-              등록된 팝니다가 없습니다.
-            </div>
-          )}
-          {sellTrades.map((trade: any, i: number) => (
-            <div
-              key={trade._id}
-              className="rounded-lg bg-gray-100 dark:bg-[#23272f] p-1 mb-1 flex flex-col gap-0 shadow border border-gray-200 dark:border-[#2e3a4d] text-xs sm:text-[13px] cursor-pointer hover:ring-2 hover:ring-blue-400"
-              onClick={() => handleTradeClick(trade)}
-            >
-              <div className="flex items-center gap-2">
-                <div className="relative">
-                  {(trade.itemType || baseItem.type) === "EQUIP" ? (
-                    <Popover
-                      content={
-                        <TradeEquipDetailBody
-                          item={baseItem}
-                          trade={trade}
-                          cardSize={320}
-                        />
-                      }
-                    >
-                      <ItemIcon id={itemId} size={32} disableDarkBg={true} />
-                    </Popover>
-                  ) : (
-                    <ItemIcon id={itemId} size={32} disableDarkBg={true} />
-                  )}
-                </div>
-                <div className="flex flex-col flex-1 min-w-0">
-                  <span className="font-semibold text-[13px] text-black dark:text-white truncate">
-                    {itemMeta.name}
-                  </span>
-                  <span className="font-semibold text-[13px] flex items-center gap-1 leading-tight text-black dark:text-white">
-                    <span className="flex items-center gap-1">
-                      {trade.itemPrice.toLocaleString()}
-                      <img
-                        src="/meso.png"
-                        alt="메소"
-                        style={{
-                          width: 16,
-                          height: 16,
-                          display: "inline-block",
-                        }}
-                      />
-                    </span>
-                    {shouldShowCoin(trade.coin) && (
-                      <span className="flex items-center gap-1">
-                        <span className="text-gray-500 font-bold">or</span>
-                        {(() => {
-                          const { g, s, b } = parseCoinString(trade.coin);
-                          return (
-                            <span className="flex items-center gap-1">
-                              {g > 0 && (
-                                <>
-                                  <img
-                                    src="/goldCoin.png"
-                                    alt="Gold"
-                                    className="w-4 h-4 inline-block"
-                                  />
-                                  {g}
-                                </>
-                              )}
-                              {s > 0 && (
-                                <>
-                                  <img
-                                    src="/silverCoin.png"
-                                    alt="Silver"
-                                    className="w-4 h-4 inline-block"
-                                  />
-                                  {s}
-                                </>
-                              )}
-                              {b > 0 && (
-                                <>
-                                  <img
-                                    src="/bronzeCoin.png"
-                                    alt="Bronze"
-                                    className="w-4 h-4 inline-block"
-                                  />
-                                  {b}
-                                </>
-                              )}
-                            </span>
-                          );
-                        })()}
-                      </span>
-                    )}
-                  </span>
-                  <span className="text-xs text-gray-500 dark:text-gray-300">
-                    {trade.quantity ? `${trade.quantity}개` : "1개"}
-                  </span>
-                </div>
-                <div className="flex flex-col items-center ml-2">
-                  <span className="text-xs text-gray-400 whitespace-nowrap mb-0">
-                    {getTimeAgo(trade.createdAt)}
-                  </span>
-                  <img
-                    src={getDiscordAvatarUrl(
-                      trade.userDiscordId,
-                      trade.userAvatar,
-                      i
-                    )}
-                    className="w-5 h-5 rounded-full"
-                    alt="avatar"
-                  />
-                  <span className="text-xs truncate mt-0">
-                    {trade.userGlobalName}
-                  </span>
-                </div>
+          <div className="flex-1 overflow-y-auto">
+            {sellTrades.length === 0 && (
+              <div className="text-gray-300 text-center">
+                등록된 팝니다가 없습니다.
               </div>
-              <div className="flex flex-wrap gap-0.5 mt-0 group">
-                {(trade.itemType || baseItem.type) !== "OTHERS" && (
-                  <>
-                    {getOptionTags(baseItem, trade).map(
-                      (tag: string, idx: number) => (
-                        <span
-                          key={idx}
-                          className="bg-blue-600 dark:bg-blue-700 text-white text-[11px] px-1.5 py-0.5 rounded"
+            )}
+            {sellTrades.map((t, i) => {
+              const trade = getTrade(t, isProfileMode);
+              const base = getBaseItem(t, isProfileMode, baseItem);
+              const itemIdToUse = base?.itemId ?? trade.itemId ?? 0;
+              const itemMetaToUse = base ?? {};
+              const typeToUse = trade.itemType || base?.type;
+              return (
+                <div
+                  key={trade._id}
+                  className="rounded-lg bg-gray-100 dark:bg-[#23272f] p-1 mb-1 flex flex-col gap-0 shadow border border-gray-200 dark:border-[#2e3a4d] text-xs sm:text-[13px] cursor-pointer hover:ring-2 hover:ring-blue-400"
+                  onClick={() => handleTradeClick({ trade, baseItem: base })}
+                >
+                  <div className="flex items-center gap-2">
+                    <div className="relative">
+                      {typeToUse === "EQUIP" ? (
+                        <Popover
+                          content={
+                            <TradeEquipDetailBody
+                              item={base}
+                              trade={trade}
+                              cardSize={320}
+                            />
+                          }
                         >
-                          {tag}
+                          <ItemIcon
+                            id={itemIdToUse}
+                            size={32}
+                            disableDarkBg={true}
+                          />
+                        </Popover>
+                      ) : typeToUse === "OTHERS" ? (
+                        <ItemIcon
+                          id={itemIdToUse}
+                          size={32}
+                          disableDarkBg={true}
+                        />
+                      ) : (
+                        <ItemIcon
+                          id={itemIdToUse}
+                          size={32}
+                          disableDarkBg={true}
+                        />
+                      )}
+                    </div>
+                    <div className="flex flex-col flex-1 min-w-0">
+                      <span className="font-semibold text-[13px] text-black dark:text-white truncate">
+                        {itemMetaToUse.name}
+                      </span>
+                      <span className="font-semibold text-[13px] flex items-center gap-1 leading-tight text-black dark:text-white">
+                        <span className="flex items-center gap-1">
+                          {trade.itemPrice?.toLocaleString?.() ??
+                            trade.itemPrice ??
+                            "-"}
+                          <img
+                            src="/meso.png"
+                            alt="메소"
+                            style={{
+                              width: 16,
+                              height: 16,
+                              display: "inline-block",
+                            }}
+                          />
                         </span>
-                      )
+                        {shouldShowCoin(trade.coin) && (
+                          <span className="flex items-center gap-1">
+                            <span className="text-gray-500 font-bold">or</span>
+                            {(() => {
+                              const { g, s, b } = parseCoinString(trade.coin);
+                              return (
+                                <span className="flex items-center gap-1">
+                                  {g > 0 && (
+                                    <>
+                                      <img
+                                        src="/goldCoin.png"
+                                        alt="Gold"
+                                        className="w-4 h-4 inline-block"
+                                      />
+                                      {g}
+                                    </>
+                                  )}
+                                  {s > 0 && (
+                                    <>
+                                      <img
+                                        src="/silverCoin.png"
+                                        alt="Silver"
+                                        className="w-4 h-4 inline-block"
+                                      />
+                                      {s}
+                                    </>
+                                  )}
+                                  {b > 0 && (
+                                    <>
+                                      <img
+                                        src="/bronzeCoin.png"
+                                        alt="Bronze"
+                                        className="w-4 h-4 inline-block"
+                                      />
+                                      {b}
+                                    </>
+                                  )}
+                                </span>
+                              );
+                            })()}
+                          </span>
+                        )}
+                      </span>
+                      <span className="text-xs text-gray-500 dark:text-gray-300">
+                        {trade.quantity ? `${trade.quantity}개` : "1개"}
+                      </span>
+                    </div>
+                    <div className="flex flex-col items-center ml-2">
+                      <span className="text-xs text-gray-400 whitespace-nowrap mb-0">
+                        {getTimeAgo(trade.createdAt)}
+                      </span>
+                      <img
+                        src={getDiscordAvatarUrl(
+                          trade.userDiscordId,
+                          trade.userAvatar,
+                          i
+                        )}
+                        className="w-5 h-5 rounded-full"
+                        alt="avatar"
+                      />
+                      <span className="text-xs truncate mt-0">
+                        {trade.userGlobalName}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-0.5 mt-0 group">
+                    {typeToUse !== "OTHERS" && base && (
+                      <>
+                        {getOptionTags(base, trade).map(
+                          (tag: string, idx: number) => (
+                            <span
+                              key={idx}
+                              className="bg-blue-600 dark:bg-blue-700 text-white text-[11px] px-1.5 py-0.5 rounded"
+                            >
+                              {tag}
+                            </span>
+                          )
+                        )}
+                        {getPotentialTags(trade).map(
+                          (tag: string, idx: number) => (
+                            <span
+                              key={"potential-" + idx}
+                              className="bg-purple-600 dark:bg-purple-700 text-white text-[11px] px-1.5 py-0.5 rounded"
+                            >
+                              {tag}
+                            </span>
+                          )
+                        )}
+                        {getCustomTags(trade).map(
+                          (tag: string, idx: number) => (
+                            <span
+                              key={"custom-" + idx}
+                              className="bg-purple-600 dark:bg-purple-700 text-white text-[11px] px-1.5 py-0.5 rounded"
+                            >
+                              {tag}
+                            </span>
+                          )
+                        )}
+                        <span className="bg-gray-200 dark:bg-gray-700 text-black dark:text-white text-[11px] px-1.5 py-0.5 rounded">
+                          {trade.upgradeCount} 작
+                        </span>
+                        <span className="bg-gray-200 dark:bg-gray-700 text-black dark:text-white text-[11px] px-1.5 py-0.5 rounded">
+                          업횟 {trade.tuc}
+                        </span>
+                      </>
                     )}
-                    {getPotentialTags(trade).map((tag: string, idx: number) => (
-                      <span
-                        key={"potential-" + idx}
-                        className="bg-purple-600 dark:bg-purple-700 text-white text-[11px] px-1.5 py-0.5 rounded"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                    {getCustomTags(trade).map((tag: string, idx: number) => (
-                      <span
-                        key={"custom-" + idx}
-                        className="bg-purple-600 dark:bg-purple-700 text-white text-[11px] px-1.5 py-0.5 rounded"
-                      >
-                        {tag}
-                      </span>
-                    ))}
                     <span className="bg-gray-200 dark:bg-gray-700 text-black dark:text-white text-[11px] px-1.5 py-0.5 rounded">
-                      {trade.upgradeCount} 작
+                      {trade.tradeWorld}
                     </span>
                     <span className="bg-gray-200 dark:bg-gray-700 text-black dark:text-white text-[11px] px-1.5 py-0.5 rounded">
-                      업횟 {trade.tuc}
+                      흥정
+                      {trade.haggling === "POSSIBLE"
+                        ? "가능"
+                        : trade.haggling === "IMPOSSIBLE"
+                        ? "불가"
+                        : "제안받음"}
                     </span>
-                  </>
-                )}
-                <span className="bg-gray-200 dark:bg-gray-700 text-black dark:text-white text-[11px] px-1.5 py-0.5 rounded">
-                  {trade.tradeWorld}
-                </span>
-                <span className="bg-gray-200 dark:bg-gray-700 text-black dark:text-white text-[11px] px-1.5 py-0.5 rounded">
-                  흥정
-                  {trade.haggling === "POSSIBLE"
-                    ? "가능"
-                    : trade.haggling === "IMPOSSIBLE"
-                    ? "불가"
-                    : "제안받음"}
-                </span>
-                {trade.comment && (
-                  <span className="relative bg-gray-200 dark:bg-zinc-800 text-black dark:text-white text-[11px] px-1.5 py-0.5 rounded truncate max-w-[120px]">
-                    {trade.comment}
-                    <span className="absolute left-1/2 -translate-x-1/2 -top-2 z-10 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-opacity duration-150 flex flex-col items-center">
-                      <span className="mt-[-40px] bg-white dark:bg-zinc-900 text-black dark:text-white text-sm px-4 py-2 rounded shadow-lg border border-gray-200 dark:border-zinc-700 whitespace-pre-line max-w-xs min-w-[180px] break-words">
+                    {trade.comment && (
+                      <span className="relative bg-gray-200 dark:bg-zinc-800 text-black dark:text-white text-[11px] px-1.5 py-0.5 rounded truncate max-w-[120px]">
                         {trade.comment}
+                        <span className="absolute left-1/2 -translate-x-1/2 -top-2 z-10 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-opacity duration-150 flex flex-col items-center">
+                          <span className="mt-[-40px] bg-white dark:bg-zinc-900 text-black dark:text-white text-sm px-4 py-2 rounded shadow-lg border border-gray-200 dark:border-zinc-700 whitespace-pre-line max-w-xs min-w-[180px] break-words">
+                            {trade.comment}
+                          </span>
+                        </span>
                       </span>
-                    </span>
-                  </span>
-                )}
-              </div>
-            </div>
-          ))}
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
         {/* 삽니다 */}
-        <div className="flex-1 bg-white dark:bg-[#181c23] rounded-lg p-2 flex flex-col overflow-y-auto min-w-0 sm:min-w-[320px] sm:max-w-[500px] border border-gray-300 dark:border-zinc-700">
+        <div className="flex-1 bg-white dark:bg-[#181c23] rounded-lg p-2 flex flex-col min-w-0 sm:min-w-[320px] sm:max-w-[500px] border border-gray-300 dark:border-zinc-700">
           <div
             className="font-bold mb-2 text-white text-left text-lg px-4 py-2 rounded-t-lg"
             style={{ background: "#1a6c38" }}
           >
             삽니다
           </div>
-          {buyTrades.length === 0 && (
-            <div className="text-gray-300 text-center">
-              등록된 삽니다가 없습니다.
-            </div>
-          )}
-          {buyTrades.map((trade: any, i: number) => (
-            <div
-              key={trade._id}
-              className="rounded-lg bg-gray-100 dark:bg-[#23272f] p-1 mb-1 flex flex-col gap-0 shadow border border-gray-200 dark:border-[#2e3a4d] text-xs sm:text-[13px] cursor-pointer hover:ring-2 hover:ring-blue-400"
-              onClick={() => handleTradeClick(trade)}
-            >
-              <div className="flex items-center gap-2">
-                <div className="relative">
-                  {(trade.itemType || baseItem.type) === "EQUIP" ? (
-                    <Popover
-                      content={
-                        <TradeEquipDetailBody
-                          item={baseItem}
-                          trade={trade}
-                          cardSize={320}
-                        />
-                      }
-                    >
-                      <ItemIcon id={itemId} size={32} disableDarkBg={true} />
-                    </Popover>
-                  ) : (
-                    <ItemIcon id={itemId} size={32} disableDarkBg={true} />
-                  )}
-                </div>
-                <div className="flex flex-col flex-1 min-w-0">
-                  <span className="font-semibold text-[13px] text-black dark:text-white truncate">
-                    {itemMeta.name}
-                  </span>
-                  <span className="font-semibold text-[13px] flex items-center gap-1 leading-tight text-black dark:text-white">
-                    <span className="flex items-center gap-1">
-                      {trade.itemPrice.toLocaleString()}
-                      <img
-                        src="/meso.png"
-                        alt="메소"
-                        style={{
-                          width: 16,
-                          height: 16,
-                          display: "inline-block",
-                        }}
-                      />
-                    </span>
-                    {shouldShowCoin(trade.coin) && (
-                      <span className="flex items-center gap-1">
-                        <span className="text-gray-500 font-bold">or</span>
-                        {(() => {
-                          const { g, s, b } = parseCoinString(trade.coin);
-                          return (
-                            <span className="flex items-center gap-1">
-                              {g > 0 && (
-                                <>
-                                  <img
-                                    src="/goldCoin.png"
-                                    alt="Gold"
-                                    className="w-4 h-4 inline-block"
-                                  />
-                                  {g}
-                                </>
-                              )}
-                              {s > 0 && (
-                                <>
-                                  <img
-                                    src="/silverCoin.png"
-                                    alt="Silver"
-                                    className="w-4 h-4 inline-block"
-                                  />
-                                  {s}
-                                </>
-                              )}
-                              {b > 0 && (
-                                <>
-                                  <img
-                                    src="/bronzeCoin.png"
-                                    alt="Bronze"
-                                    className="w-4 h-4 inline-block"
-                                  />
-                                  {b}
-                                </>
-                              )}
-                            </span>
-                          );
-                        })()}
-                      </span>
-                    )}
-                  </span>
-                  <span className="text-xs text-gray-500 dark:text-gray-300">
-                    {trade.quantity ? `${trade.quantity}개` : "1개"}
-                  </span>
-                </div>
-                <div className="flex flex-col items-center ml-2">
-                  <span className="text-xs text-gray-400 whitespace-nowrap mb-0">
-                    {getTimeAgo(trade.createdAt)}
-                  </span>
-                  <img
-                    src={getDiscordAvatarUrl(
-                      trade.userDiscordId,
-                      trade.userAvatar,
-                      i
-                    )}
-                    className="w-5 h-5 rounded-full"
-                    alt="avatar"
-                  />
-                  <span className="text-xs truncate mt-0">
-                    {trade.userGlobalName}
-                  </span>
-                </div>
+          <div className="flex-1 overflow-y-auto">
+            {buyTrades.length === 0 && (
+              <div className="text-gray-300 text-center">
+                등록된 삽니다가 없습니다.
               </div>
-              <div className="flex flex-wrap gap-0.5 mt-0 group">
-                {(trade.itemType || baseItem.type) !== "OTHERS" && (
-                  <>
-                    {getOptionTags(baseItem, trade).map(
-                      (tag: string, idx: number) => (
-                        <span
-                          key={idx}
-                          className="bg-blue-600 dark:bg-blue-700 text-white text-[11px] px-1.5 py-0.5 rounded"
+            )}
+            {buyTrades.map((t, i) => {
+              const trade = getTrade(t, isProfileMode);
+              const base = getBaseItem(t, isProfileMode, baseItem);
+              const itemIdToUse = base?.itemId ?? trade.itemId ?? 0;
+              const itemMetaToUse = base ?? {};
+              const typeToUse = trade.itemType || base?.type;
+              return (
+                <div
+                  key={trade._id}
+                  className="rounded-lg bg-gray-100 dark:bg-[#23272f] p-1 mb-1 flex flex-col gap-0 shadow border border-gray-200 dark:border-[#2e3a4d] text-xs sm:text-[13px] cursor-pointer hover:ring-2 hover:ring-blue-400"
+                  onClick={() => handleTradeClick({ trade, baseItem: base })}
+                >
+                  <div className="flex items-center gap-2">
+                    <div className="relative">
+                      {typeToUse === "EQUIP" ? (
+                        <Popover
+                          content={
+                            <TradeEquipDetailBody
+                              item={base}
+                              trade={trade}
+                              cardSize={320}
+                            />
+                          }
                         >
-                          {tag}
+                          <ItemIcon
+                            id={itemIdToUse}
+                            size={32}
+                            disableDarkBg={true}
+                          />
+                        </Popover>
+                      ) : typeToUse === "OTHERS" ? (
+                        <ItemIcon
+                          id={itemIdToUse}
+                          size={32}
+                          disableDarkBg={true}
+                        />
+                      ) : (
+                        <ItemIcon
+                          id={itemIdToUse}
+                          size={32}
+                          disableDarkBg={true}
+                        />
+                      )}
+                    </div>
+                    <div className="flex flex-col flex-1 min-w-0">
+                      <span className="font-semibold text-[13px] text-black dark:text-white truncate">
+                        {itemMetaToUse.name}
+                      </span>
+                      <span className="font-semibold text-[13px] flex items-center gap-1 leading-tight text-black dark:text-white">
+                        <span className="flex items-center gap-1">
+                          {trade.itemPrice?.toLocaleString?.() ??
+                            trade.itemPrice ??
+                            "-"}
+                          <img
+                            src="/meso.png"
+                            alt="메소"
+                            style={{
+                              width: 16,
+                              height: 16,
+                              display: "inline-block",
+                            }}
+                          />
                         </span>
-                      )
+                        {shouldShowCoin(trade.coin) && (
+                          <span className="flex items-center gap-1">
+                            <span className="text-gray-500 font-bold">or</span>
+                            {(() => {
+                              const { g, s, b } = parseCoinString(trade.coin);
+                              return (
+                                <span className="flex items-center gap-1">
+                                  {g > 0 && (
+                                    <>
+                                      <img
+                                        src="/goldCoin.png"
+                                        alt="Gold"
+                                        className="w-4 h-4 inline-block"
+                                      />
+                                      {g}
+                                    </>
+                                  )}
+                                  {s > 0 && (
+                                    <>
+                                      <img
+                                        src="/silverCoin.png"
+                                        alt="Silver"
+                                        className="w-4 h-4 inline-block"
+                                      />
+                                      {s}
+                                    </>
+                                  )}
+                                  {b > 0 && (
+                                    <>
+                                      <img
+                                        src="/bronzeCoin.png"
+                                        alt="Bronze"
+                                        className="w-4 h-4 inline-block"
+                                      />
+                                      {b}
+                                    </>
+                                  )}
+                                </span>
+                              );
+                            })()}
+                          </span>
+                        )}
+                      </span>
+                      <span className="text-xs text-gray-500 dark:text-gray-300">
+                        {trade.quantity ? `${trade.quantity}개` : "1개"}
+                      </span>
+                    </div>
+                    <div className="flex flex-col items-center ml-2">
+                      <span className="text-xs text-gray-400 whitespace-nowrap mb-0">
+                        {getTimeAgo(trade.createdAt)}
+                      </span>
+                      <img
+                        src={getDiscordAvatarUrl(
+                          trade.userDiscordId,
+                          trade.userAvatar,
+                          i
+                        )}
+                        className="w-5 h-5 rounded-full"
+                        alt="avatar"
+                      />
+                      <span className="text-xs truncate mt-0">
+                        {trade.userGlobalName}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-0.5 mt-0 group">
+                    {typeToUse !== "OTHERS" && base && (
+                      <>
+                        {getOptionTags(base, trade).map(
+                          (tag: string, idx: number) => (
+                            <span
+                              key={idx}
+                              className="bg-blue-600 dark:bg-blue-700 text-white text-[11px] px-1.5 py-0.5 rounded"
+                            >
+                              {tag}
+                            </span>
+                          )
+                        )}
+                        {getPotentialTags(trade).map(
+                          (tag: string, idx: number) => (
+                            <span
+                              key={"potential-" + idx}
+                              className="bg-purple-600 dark:bg-purple-700 text-white text-[11px] px-1.5 py-0.5 rounded"
+                            >
+                              {tag}
+                            </span>
+                          )
+                        )}
+                        {getCustomTags(trade).map(
+                          (tag: string, idx: number) => (
+                            <span
+                              key={"custom-" + idx}
+                              className="bg-purple-600 dark:bg-purple-700 text-white text-[11px] px-1.5 py-0.5 rounded"
+                            >
+                              {tag}
+                            </span>
+                          )
+                        )}
+                        <span className="bg-gray-200 dark:bg-gray-700 text-black dark:text-white text-[11px] px-1.5 py-0.5 rounded">
+                          {trade.upgradeCount} 작
+                        </span>
+                        <span className="bg-gray-200 dark:bg-gray-700 text-black dark:text-white text-[11px] px-1.5 py-0.5 rounded">
+                          업횟 {trade.tuc}
+                        </span>
+                      </>
                     )}
-                    {getPotentialTags(trade).map((tag: string, idx: number) => (
-                      <span
-                        key={"potential-" + idx}
-                        className="bg-purple-600 dark:bg-purple-700 text-white text-[11px] px-1.5 py-0.5 rounded"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                    {getCustomTags(trade).map((tag: string, idx: number) => (
-                      <span
-                        key={"custom-" + idx}
-                        className="bg-purple-600 dark:bg-purple-700 text-white text-[11px] px-1.5 py-0.5 rounded"
-                      >
-                        {tag}
-                      </span>
-                    ))}
                     <span className="bg-gray-200 dark:bg-gray-700 text-black dark:text-white text-[11px] px-1.5 py-0.5 rounded">
-                      {trade.upgradeCount} 작
+                      {trade.tradeWorld}
                     </span>
                     <span className="bg-gray-200 dark:bg-gray-700 text-black dark:text-white text-[11px] px-1.5 py-0.5 rounded">
-                      업횟 {trade.tuc}
+                      흥정
+                      {trade.haggling === "POSSIBLE"
+                        ? "가능"
+                        : trade.haggling === "IMPOSSIBLE"
+                        ? "불가"
+                        : "제안받음"}
                     </span>
-                  </>
-                )}
-                <span className="bg-gray-200 dark:bg-gray-700 text-black dark:text-white text-[11px] px-1.5 py-0.5 rounded">
-                  {trade.tradeWorld}
-                </span>
-                <span className="bg-gray-200 dark:bg-gray-700 text-black dark:text-white text-[11px] px-1.5 py-0.5 rounded">
-                  흥정
-                  {trade.haggling === "POSSIBLE"
-                    ? "가능"
-                    : trade.haggling === "IMPOSSIBLE"
-                    ? "불가"
-                    : "제안받음"}
-                </span>
-                {trade.comment && (
-                  <span className="relative bg-gray-200 dark:bg-zinc-800 text-black dark:text-white text-[11px] px-1.5 py-0.5 rounded truncate max-w-[120px]">
-                    {trade.comment}
-                    <span className="absolute left-1/2 -translate-x-1/2 -top-2 z-10 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-opacity duration-150 flex flex-col items-center">
-                      <span className="mt-[-40px] bg-white dark:bg-zinc-900 text-black dark:text-white text-sm px-4 py-2 rounded shadow-lg border border-gray-200 dark:border-zinc-700 whitespace-pre-line max-w-xs min-w-[180px] break-words">
+                    {trade.comment && (
+                      <span className="relative bg-gray-200 dark:bg-zinc-800 text-black dark:text-white text-[11px] px-1.5 py-0.5 rounded truncate max-w-[120px]">
                         {trade.comment}
+                        <span className="absolute left-1/2 -translate-x-1/2 -top-2 z-10 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-opacity duration-150 flex flex-col items-center">
+                          <span className="mt-[-40px] bg-white dark:bg-zinc-900 text-black dark:text-white text-sm px-4 py-2 rounded shadow-lg border border-gray-200 dark:border-zinc-700 whitespace-pre-line max-w-xs min-w-[180px] break-words">
+                            {trade.comment}
+                          </span>
+                        </span>
                       </span>
-                    </span>
-                  </span>
-                )}
-              </div>
-            </div>
-          ))}
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
       {/* 거래 상세 모달 */}
       {selectedTrade && (
         <TradeDetailModal
-          trade={selectedTrade}
-          baseItem={baseItem}
+          trade={selectedTrade.trade}
+          baseItem={selectedTrade.baseItem}
           onClose={handleCloseModal}
           onBuy={handleBuy}
           getOptionTags={getOptionTags}

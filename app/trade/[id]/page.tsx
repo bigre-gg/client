@@ -7,6 +7,7 @@ import ItemDetailBody from "@/app/ui/item-detail-body";
 import NonEquipItemDetail from "@/app/ui/NonEquipItemDetail";
 import { getItemById, ItemApiResponse } from "@/lib/items";
 import { OPTION_TRANSLATIONS } from "@/app/ui/TradeListPanel";
+import UserProfileCard from "@/app/ui/UserProfileCard";
 
 // 코인 문자열 파싱 함수 (TradeListPanel과 동일)
 function parseCoinString(coinStr?: string) {
@@ -188,40 +189,14 @@ export default function TradeDetailPage() {
   return (
     <div className="flex flex-col md:flex-row gap-6 w-full max-w-5xl mx-auto py-8 px-2">
       {/* 좌측: 유저 프로필 */}
-      <div className="w-full md:w-72 bg-white dark:bg-[#23272f] rounded-2xl shadow p-6 flex flex-col items-center border border-gray-200 dark:border-zinc-700 relative">
-        <img
-          src={
-            trade.userAvatar
-              ? `https://cdn.discordapp.com/avatars/${trade.userDiscordId}/${trade.userAvatar}.png`
-              : `https://cdn.discordapp.com/embed/avatars/0.png`
-          }
-          className="w-20 h-20 rounded-full mb-3 border-2 border-blue-500 mt-8"
-          alt="avatar"
-        />
-        <div className="text-lg text-black dark:text-white mb-1">
-          {trade.userGlobalName}
-        </div>
-        <div className="text-sm text-gray-500 mb-1">
-          {trade.username ? `@${trade.username}` : null}
-        </div>
-        <div className="text-xs text-gray-400 mb-2">
-          가입일: {userCreatedAtStr}
-        </div>
-        <button className="w-full py-2 rounded bg-red-500 text-white font-bold text-base hover:bg-red-600 mb-3">
-          신고하기
-        </button>
-        <div className="w-full">
-          <button
-            className="w-full py-2 rounded bg-blue-600 text-white font-bold text-base hover:bg-blue-700 mt-4"
-            onClick={() => {
-              const userId = user?.userId || trade.userDiscordId;
-              if (userId) router.push(`/profile/${userId}`);
-            }}
-          >
-            유저 프로필 보기
-          </button>
-        </div>
-      </div>
+      <UserProfileCard
+        user={user}
+        onReport={() => alert("신고 기능은 준비 중입니다.")}
+        onProfileClick={() => {
+          const userId = user?.userId || user?.discordId;
+          if (userId) router.push(`/profile/${userId}`);
+        }}
+      />
       {/* 우측: 거래 상세 */}
       <div className="flex-1 bg-white dark:bg-[#23272f] rounded-2xl shadow p-6 border border-gray-200 dark:border-zinc-700 flex flex-col items-center justify-center">
         {/* 거래시 주의사항 안내 - 팝니다/삽니다 위쪽 */}
