@@ -184,10 +184,6 @@ export default function SearchBox({ variant = "main" }: SearchBoxProps) {
       style={
         variant === "main"
           ? {
-              position: "absolute",
-              left: "50%",
-              top: "35%",
-              transform: "translate(-50%, -50%)",
               width: "100%",
               maxWidth: 500,
               display: "flex",
@@ -213,13 +209,17 @@ export default function SearchBox({ variant = "main" }: SearchBoxProps) {
           onFocus={handleInputFocus}
           onBlur={handleInputBlur}
           placeholder="아이템 검색"
-          className="w-full p-2 text-base rounded bg-lightBg dark:bg-darkBg text-darkBg dark:text-lightBg mb-2 focus:outline-none focus:ring-2 focus:ring-zinc-300 dark:focus:ring-zinc-700 focus:ring-offset-0"
+          className={`w-full p-2 text-base rounded ${
+            variant === "header"
+              ? "bg-transparent"
+              : "bg-lightBg dark:bg-darkBg"
+          } text-darkBg dark:text-lightBg mb-2 focus:outline-none focus:ring-2 focus:ring-zinc-300 dark:focus:ring-zinc-700 focus:ring-offset-0`}
         />
         {/* 최근검색/즐겨찾기 패널 */}
         {showRecentAndFavorite && (
           <div
             className={
-              "absolute left-0 right-0 z-50 flex gap-4 bg-transparent transition-all duration-300 " +
+              "absolute left-0 right-0 z-50 flex gap-4 transition-all duration-300 " +
               (showRecentAndFavorite
                 ? "opacity-100 translate-y-0 pointer-events-auto"
                 : "opacity-0 translate-y-2 pointer-events-none")

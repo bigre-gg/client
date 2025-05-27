@@ -4,7 +4,7 @@ import Link from "next/link";
 const notices = [
   { href: "/notice/trade", title: "거래 관련 안내" },
   { href: "/notice/rule", title: "이용 규칙" },
-  { href: "/notice/login", title: "로그인 안내" },
+  { href: "/notice/discord", title: "디스코드 관련 안내" },
   { href: "/notice/ask", title: "문의/신고 안내" },
 ];
 

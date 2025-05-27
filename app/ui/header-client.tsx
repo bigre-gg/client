@@ -94,7 +94,7 @@ export default function Header({ isLoggedIn }: { isLoggedIn: boolean }) {
         </div>
       </header>
       {usePathname() !== "/" && (
-        <div className="flex sm:hidden w-full justify-center m-0 p-0">
+        <div className="flex sm:hidden w-full justify-center m-0 p-0 bg-lightBg dark:bg-darkBg">
           <SearchBox variant="header" />
         </div>
       )}
