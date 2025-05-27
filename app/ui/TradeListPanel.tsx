@@ -591,9 +591,15 @@ function TradeDetailModal({
               }
               router.push(`/trade/${trade._id}`);
             }}
-            className="flex-1 py-2 rounded bg-blue-600 text-white font-bold text-base hover:bg-blue-700 ml-2"
+            className={`flex-1 py-2 rounded font-bold text-base ml-2
+              ${
+                trade.status === "COMPLETED"
+                  ? "bg-gray-400 text-gray-200 cursor-not-allowed"
+                  : "bg-blue-600 text-white hover:bg-blue-700"
+              }`}
+            disabled={trade.status === "COMPLETED"}
           >
-            구매하기
+            {trade.status === "COMPLETED" ? "구매 완료" : "구매하기"}
           </button>
         </div>
         <style jsx global>{`
@@ -1077,8 +1083,17 @@ export default function TradeListPanel(props: TradeListPanelProps) {
               return (
                 <div
                   key={trade._id}
-                  className="rounded-lg bg-gray-100 dark:bg-[#23272f] p-1 mb-1 flex flex-col gap-0 shadow border border-gray-200 dark:border-[#2e3a4d] text-xs sm:text-[13px] cursor-pointer hover:bg-gray-200 dark:hover:bg-zinc-700 transition-colors"
-                  onClick={() => handleTradeClick(trade, base)}
+                  className={`rounded-lg p-1 mb-1 flex flex-col gap-0 shadow border text-xs sm:text-[13px] transition-colors
+                    ${
+                      trade.status === "COMPLETED"
+                        ? "bg-gray-200 dark:bg-zinc-800 opacity-60 cursor-not-allowed border-gray-300 dark:border-zinc-700"
+                        : "bg-gray-100 dark:bg-[#23272f] hover:bg-gray-200 dark:hover:bg-zinc-700 cursor-pointer border-gray-200 dark:border-[#2e3a4d]"
+                    }`}
+                  onClick={() =>
+                    trade.status === "COMPLETED"
+                      ? undefined
+                      : handleTradeClick(trade, base)
+                  }
                 >
                   <div className="flex items-center gap-2">
                     <div className="relative">
@@ -1287,8 +1302,17 @@ export default function TradeListPanel(props: TradeListPanelProps) {
               return (
                 <div
                   key={trade._id}
-                  className="rounded-lg bg-gray-100 dark:bg-[#23272f] p-1 mb-1 flex flex-col gap-0 shadow border border-gray-200 dark:border-[#2e3a4d] text-xs sm:text-[13px] cursor-pointer hover:bg-gray-200 dark:hover:bg-zinc-700 transition-colors"
-                  onClick={() => handleTradeClick(trade, base)}
+                  className={`rounded-lg p-1 mb-1 flex flex-col gap-0 shadow border text-xs sm:text-[13px] transition-colors
+                    ${
+                      trade.status === "COMPLETED"
+                        ? "bg-gray-200 dark:bg-zinc-800 opacity-60 cursor-not-allowed border-gray-300 dark:border-zinc-700"
+                        : "bg-gray-100 dark:bg-[#23272f] hover:bg-gray-200 dark:hover:bg-zinc-700 cursor-pointer border-gray-200 dark:border-[#2e3a4d]"
+                    }`}
+                  onClick={() =>
+                    trade.status === "COMPLETED"
+                      ? undefined
+                      : handleTradeClick(trade, base)
+                  }
                 >
                   <div className="flex items-center gap-2">
                     <div className="relative">
