@@ -40,17 +40,17 @@ export const OPTION_TRANSLATIONS: Record<string, string> = {
 
 // 코인 문자열 파싱 함수
 function parseCoinString(coinStr?: string) {
-  if (!coinStr) return { g: 0, s: 0, b: 0 };
+  if (!coinStr) return { g: "", s: "", b: "" };
   const match = coinStr.match(/(\d+)g(\d+)s(\d+)b/);
-  if (!match) return { g: 0, s: 0, b: 0 };
-  return { g: Number(match[1]), s: Number(match[2]), b: Number(match[3]) };
+  if (!match) return { g: "", s: "", b: "" };
+  return { g: match[1], s: match[2], b: match[3] };
 }
 
 // 코인 표시 여부 함수
 function shouldShowCoin(coinStr?: string) {
   if (!coinStr) return false;
   const { g, s, b } = parseCoinString(coinStr);
-  return g > 0 || s > 0 || b > 0;
+  return Number(g) > 0 || Number(s) > 0 || Number(b) > 0;
 }
 
 // 팝오버(툴팁) 컴포넌트
@@ -156,6 +156,16 @@ function TradeDetailModal({
 }) {
   const router = useRouter();
   const [showManageActions, setShowManageActions] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editPrice, setEditPrice] = useState(
+    trade.itemPrice !== undefined && trade.itemPrice !== null
+      ? String(trade.itemPrice)
+      : ""
+  );
+  const [editComment, setEditComment] = useState(trade.comment ?? "");
+  const [editWorld, setEditWorld] = useState(trade.tradeWorld ?? "");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   if (!trade) return null;
   const isEquip = (trade.itemType || baseItem.type) === "EQUIP";
   // 유저 정보
@@ -163,13 +173,98 @@ function TradeDetailModal({
     trade.userAvatar && trade.userDiscordId
       ? `https://cdn.discordapp.com/avatars/${trade.userDiscordId}/${trade.userAvatar}.png`
       : `https://cdn.discordapp.com/embed/avatars/0.png`;
+  // coin 파싱 및 상태
+  const initialCoin = parseCoinString(trade.coin);
+  const [editGold, setEditGold] = useState(initialCoin.g);
+  const [editSilver, setEditSilver] = useState(initialCoin.s);
+  const [editBronze, setEditBronze] = useState(initialCoin.b);
+  // 관리 액션 함수들
+  async function handleComplete() {
+    if (!confirm("정말 거래를 완료 처리하시겠습니까?")) return;
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch(`/api/trades/complete/${trade._id}`, {
+        method: "POST",
+      });
+      if (!res.ok) throw new Error(await res.text());
+      alert("거래가 완료 처리되었습니다.");
+      router.refresh?.();
+      onClose();
+      if (
+        typeof window !== "undefined" &&
+        window.location.pathname.startsWith("/profile/")
+      ) {
+        window.location.reload();
+      }
+    } catch (e: any) {
+      setError(e.message || "오류 발생");
+    } finally {
+      setLoading(false);
+    }
+  }
+  async function handleCancel() {
+    if (!confirm("정말 거래를 취소하시겠습니까?")) return;
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch(`/api/trades/${trade._id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error(await res.text());
+      alert("거래가 취소되었습니다.");
+      router.refresh?.();
+      onClose();
+      if (
+        typeof window !== "undefined" &&
+        window.location.pathname.startsWith("/profile/")
+      ) {
+        window.location.reload();
+      }
+    } catch (e: any) {
+      setError(e.message || "오류 발생");
+    } finally {
+      setLoading(false);
+    }
+  }
+  async function handleEdit() {
+    setLoading(true);
+    setError("");
+    try {
+      const coinStr = `${editGold || 0}g${editSilver || 0}s${editBronze || 0}b`;
+      const res = await fetch(`/api/trades/${trade._id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...trade,
+          itemPrice: editPrice === "" ? null : Number(editPrice),
+          comment: editComment,
+          tradeWorld: editWorld,
+          coin: coinStr,
+        }),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      alert("수정이 완료되었습니다.");
+      setShowEditModal(false);
+      router.refresh?.();
+      onClose();
+      if (
+        typeof window !== "undefined" &&
+        window.location.pathname.startsWith("/profile/")
+      ) {
+        window.location.reload();
+      }
+    } catch (e: any) {
+      setError(e.message || "오류 발생");
+    } finally {
+      setLoading(false);
+    }
+  }
   return (
     <div
-      className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/60"
+      className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/60 transition-opacity duration-300 animate-modal-fadein"
       onClick={onClose}
     >
       <div
-        className="relative bg-gray-100 dark:bg-[#23272f] rounded-2xl shadow-2xl p-0 flex flex-col min-w-[340px] max-w-[95vw] w-[370px] border border-gray-700 transition-all duration-200 ease-out transform scale-95 opacity-100"
+        className="relative bg-gray-100 dark:bg-[#23272f] rounded-2xl shadow-2xl p-0 flex flex-col min-w-[340px] max-w-[95vw] w-[370px] border border-gray-700 transition-all duration-300 ease-out transform animate-modal-scalein"
         onClick={(e) => e.stopPropagation()}
       >
         {/* 상단: 팝니다/삽니다 + 등록일, 유저 정보, X버튼 */}
@@ -248,7 +343,7 @@ function TradeDetailModal({
                     const { g, s, b } = parseCoinString(trade.coin);
                     return (
                       <span className="flex items-center gap-1">
-                        {g > 0 && (
+                        {Number(g) > 0 && (
                           <>
                             <img
                               src="/goldCoin.png"
@@ -258,7 +353,7 @@ function TradeDetailModal({
                             {g}
                           </>
                         )}
-                        {s > 0 && (
+                        {Number(s) > 0 && (
                           <>
                             <img
                               src="/silverCoin.png"
@@ -268,7 +363,7 @@ function TradeDetailModal({
                             {s}
                           </>
                         )}
-                        {b > 0 && (
+                        {Number(b) > 0 && (
                           <>
                             <img
                               src="/bronzeCoin.png"
@@ -342,20 +437,138 @@ function TradeDetailModal({
               <button
                 className="w-full max-w-xs p-3 rounded bg-gray-300 dark:bg-zinc-700 text-black dark:text-white text-base font-bold mb-3 hover:bg-gray-400 dark:hover:bg-zinc-600 transition"
                 onClick={() => setShowManageActions((v) => !v)}
+                disabled={loading}
               >
                 관리
               </button>
               {showManageActions && (
                 <div className="w-full max-w-xs bg-white dark:bg-zinc-800 rounded-xl shadow-lg p-4 flex flex-col gap-3 animate-fadein">
-                  <button className="w-full p-2 rounded bg-gray-200 dark:bg-zinc-700 text-black dark:text-white font-semibold hover:bg-gray-300 dark:hover:bg-zinc-600 transition">
+                  <button
+                    className="w-full p-2 rounded bg-gray-200 dark:bg-zinc-700 text-black dark:text-white font-semibold hover:bg-gray-300 dark:hover:bg-zinc-600 transition"
+                    onClick={() => setShowEditModal(true)}
+                    disabled={loading}
+                  >
                     가격/코멘트/월드 수정
                   </button>
-                  <button className="w-full p-2 rounded bg-gray-200 dark:bg-zinc-700 text-black dark:text-white font-semibold hover:bg-gray-300 dark:hover:bg-zinc-600 transition">
+                  <button
+                    className="w-full p-2 rounded bg-gray-200 dark:bg-zinc-700 text-black dark:text-white font-semibold hover:bg-gray-300 dark:hover:bg-zinc-600 transition"
+                    onClick={handleComplete}
+                    disabled={loading}
+                  >
                     거래 완료
                   </button>
-                  <button className="w-full p-2 rounded bg-gray-200 dark:bg-zinc-700 text-black dark:text-white font-semibold hover:bg-gray-300 dark:hover:bg-zinc-600 transition">
+                  <button
+                    className="w-full p-2 rounded bg-gray-200 dark:bg-zinc-700 text-black dark:text-white font-semibold hover:bg-gray-300 dark:hover:bg-zinc-600 transition"
+                    onClick={handleCancel}
+                    disabled={loading}
+                  >
                     거래 취소
                   </button>
+                  {error && (
+                    <div className="text-red-500 text-sm mt-2">{error}</div>
+                  )}
+                </div>
+              )}
+              {/* 수정 모달 */}
+              {showEditModal && (
+                <div
+                  className="fixed inset-0 z-[11000] flex items-center justify-center bg-black/40"
+                  onClick={() => setShowEditModal(false)}
+                >
+                  <div
+                    className="bg-white dark:bg-zinc-800 rounded-xl shadow-xl p-6 w-full max-w-xs flex flex-col gap-3"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="font-bold text-lg mb-2">거래 정보 수정</div>
+                    <label className="text-sm font-semibold">가격</label>
+                    <input
+                      type="number"
+                      className="p-2 rounded border bg-white dark:bg-zinc-800"
+                      value={editPrice}
+                      onChange={(e) => setEditPrice(e.target.value)}
+                    />
+                    {/* 코인 입력란: 가격 바로 아래, 아이콘 사용, input width 축소 */}
+                    <label className="text-sm font-semibold mt-2">코인</label>
+                    <div className="flex gap-2 mb-2">
+                      <input
+                        type="number"
+                        min={0}
+                        className="p-2 rounded border bg-white dark:bg-zinc-800 w-12"
+                        placeholder="Gold"
+                        value={editGold}
+                        onChange={(e) => setEditGold(e.target.value)}
+                      />
+                      <img
+                        src="/goldCoin.png"
+                        alt="Gold"
+                        className="w-5 h-5 self-center"
+                      />
+                      <input
+                        type="number"
+                        min={0}
+                        className="p-2 rounded border bg-white dark:bg-zinc-800 w-12"
+                        placeholder="Silver"
+                        value={editSilver}
+                        onChange={(e) => setEditSilver(e.target.value)}
+                      />
+                      <img
+                        src="/silverCoin.png"
+                        alt="Silver"
+                        className="w-5 h-5 self-center"
+                      />
+                      <input
+                        type="number"
+                        min={0}
+                        className="p-2 rounded border bg-white dark:bg-zinc-800 w-12"
+                        placeholder="Bronze"
+                        value={editBronze}
+                        onChange={(e) => setEditBronze(e.target.value)}
+                      />
+                      <img
+                        src="/bronzeCoin.png"
+                        alt="Bronze"
+                        className="w-5 h-5 self-center"
+                      />
+                    </div>
+                    <label className="text-sm font-semibold">코멘트</label>
+                    <input
+                      type="text"
+                      className="p-2 rounded border bg-white dark:bg-zinc-800"
+                      value={editComment}
+                      onChange={(e) => setEditComment(e.target.value)}
+                    />
+                    <label className="text-sm font-semibold">월드</label>
+                    <select
+                      className="p-2 rounded border bg-white dark:bg-zinc-800"
+                      value={editWorld}
+                      onChange={(e) => setEditWorld(e.target.value)}
+                    >
+                      {worldOptions.map((opt) => (
+                        <option key={opt} value={opt}>
+                          {opt}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="flex gap-2 mt-3">
+                      <button
+                        className="flex-1 p-2 rounded bg-blue-500 text-white font-bold hover:bg-blue-600"
+                        onClick={handleEdit}
+                        disabled={loading}
+                      >
+                        저장
+                      </button>
+                      <button
+                        className="flex-1 p-2 rounded bg-gray-300 dark:bg-zinc-700 text-black dark:text-white font-bold hover:bg-gray-400 dark:hover:bg-zinc-600"
+                        onClick={() => setShowEditModal(false)}
+                        disabled={loading}
+                      >
+                        취소
+                      </button>
+                    </div>
+                    {error && (
+                      <div className="text-red-500 text-sm mt-2">{error}</div>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
@@ -383,18 +596,29 @@ function TradeDetailModal({
           </button>
         </div>
         <style jsx global>{`
-          @keyframes fadein {
+          @keyframes modal-fadein {
             from {
               opacity: 0;
-              transform: translateY(10px);
             }
             to {
               opacity: 1;
-              transform: translateY(0);
             }
           }
-          .animate-fadein {
-            animation: fadein 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+          @keyframes modal-scalein {
+            from {
+              opacity: 0;
+              transform: scale(0.95);
+            }
+            to {
+              opacity: 1;
+              transform: scale(1);
+            }
+          }
+          .animate-modal-fadein {
+            animation: modal-fadein 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+          }
+          .animate-modal-scalein {
+            animation: modal-scalein 0.25s cubic-bezier(0.4, 0, 0.2, 1);
           }
         `}</style>
       </div>
@@ -413,6 +637,16 @@ function getTimeAgo(dateStr: string) {
   if (diff < 86400) return `${Math.floor(diff / 3600)}시간 전`;
   return `${Math.floor(diff / 86400)}일 전`;
 }
+
+const worldOptions = [
+  "아무데나",
+  "빅토리아",
+  "오르비스",
+  "엘나스",
+  "루디브리엄",
+  "리프레",
+  "자유시장",
+];
 
 export default function TradeListPanel(props: TradeListPanelProps) {
   const {
@@ -827,7 +1061,7 @@ export default function TradeListPanel(props: TradeListPanelProps) {
                               const { g, s, b } = parseCoinString(trade.coin);
                               return (
                                 <span className="flex items-center gap-1">
-                                  {g > 0 && (
+                                  {Number(g) > 0 && (
                                     <>
                                       <img
                                         src="/goldCoin.png"
@@ -837,7 +1071,7 @@ export default function TradeListPanel(props: TradeListPanelProps) {
                                       {g}
                                     </>
                                   )}
-                                  {s > 0 && (
+                                  {Number(s) > 0 && (
                                     <>
                                       <img
                                         src="/silverCoin.png"
@@ -847,7 +1081,7 @@ export default function TradeListPanel(props: TradeListPanelProps) {
                                       {s}
                                     </>
                                   )}
-                                  {b > 0 && (
+                                  {Number(b) > 0 && (
                                     <>
                                       <img
                                         src="/bronzeCoin.png"
@@ -1037,7 +1271,7 @@ export default function TradeListPanel(props: TradeListPanelProps) {
                               const { g, s, b } = parseCoinString(trade.coin);
                               return (
                                 <span className="flex items-center gap-1">
-                                  {g > 0 && (
+                                  {Number(g) > 0 && (
                                     <>
                                       <img
                                         src="/goldCoin.png"
@@ -1047,7 +1281,7 @@ export default function TradeListPanel(props: TradeListPanelProps) {
                                       {g}
                                     </>
                                   )}
-                                  {s > 0 && (
+                                  {Number(s) > 0 && (
                                     <>
                                       <img
                                         src="/silverCoin.png"
@@ -1057,7 +1291,7 @@ export default function TradeListPanel(props: TradeListPanelProps) {
                                       {s}
                                     </>
                                   )}
-                                  {b > 0 && (
+                                  {Number(b) > 0 && (
                                     <>
                                       <img
                                         src="/bronzeCoin.png"
