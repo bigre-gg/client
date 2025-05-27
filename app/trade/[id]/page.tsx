@@ -96,6 +96,7 @@ export default function TradeDetailPage() {
   const [loading, setLoading] = useState(true);
   const [userTrades, setUserTrades] = useState<any[]>([]);
   const [user, setUser] = useState<any>(null);
+  const [tradeUser, setTradeUser] = useState<any>(null);
 
   useEffect(() => {
     async function fetchTrade() {
@@ -114,6 +115,9 @@ export default function TradeDetailPage() {
             `/api/trades/user/${data.userDiscordId}`
           );
           if (tradesRes.ok) setUserTrades(await tradesRes.json());
+          // trade 작성자 정보 fetch
+          const userRes = await fetch(`/api/users/${data.userDiscordId}`);
+          if (userRes.ok) setTradeUser(await userRes.json());
         }
         // 유저 정보(status API)
         const statusRes = await fetch("/api/auth/status", {
@@ -189,15 +193,20 @@ export default function TradeDetailPage() {
   return (
     <div className="flex flex-col md:flex-row gap-6 w-full max-w-5xl mx-auto py-2 px-2">
       {/* 좌측: 유저 프로필 */}
-      <div className="self-start">
+      <div className="self-start flex flex-col items-center">
         <UserProfileCard
-          user={user}
+          user={tradeUser}
           onReport={() => alert("신고 기능은 준비 중입니다.")}
-          onProfileClick={() => {
-            const userId = user?.userId || user?.discordId;
+        />
+        <button
+          className="w-full py-2 rounded bg-blue-600 text-white font-bold text-base hover:bg-blue-700 mt-4"
+          onClick={() => {
+            const userId = tradeUser?.userId || tradeUser?.discordId;
             if (userId) router.push(`/profile/${userId}`);
           }}
-        />
+        >
+          유저 프로필 보기
+        </button>
       </div>
       {/* 우측: 거래 상세 */}
       <div className="flex-1 bg-white dark:bg-[#23272f] rounded-2xl shadow p-6 border border-gray-200 dark:border-zinc-700 flex flex-col items-center justify-center">

@@ -31,7 +31,7 @@ export default function UserProfileCard({
             ? `https://cdn.discordapp.com/avatars/${user.discordId}/${user.avatar}.png`
             : `https://cdn.discordapp.com/embed/avatars/0.png`
         }
-        className="w-20 h-20 rounded-full mb-3 border-2 border-blue-500 mt-2"
+        className="w-20 h-20 rounded-full mb-3 border-2 border-gray-400 mt-2"
         alt="avatar"
       />
       <div className="text-lg text-black dark:text-white mb-1">
@@ -80,12 +80,37 @@ export default function UserProfileCard({
       <div className="text-xs text-gray-400 mb-2">
         가입일: {userCreatedAtStr}
       </div>
-      <button
-        className="w-full py-2 rounded bg-blue-600 text-white font-bold text-base hover:bg-blue-700 mt-4"
-        onClick={onProfileClick}
-      >
-        유저 프로필 보기
-      </button>
+      {/* 디스코드 아이디 복사 */}
+      {user?.discordId && (
+        <div className="w-full flex items-center justify-center gap-2 mt-4">
+          <span className="text-xs text-gray-500 select-all">
+            {user.discordId}
+          </span>
+          <button
+            className="p-2 rounded hover:bg-gray-200 dark:hover:bg-zinc-700"
+            title="디스코드 아이디 복사"
+            onClick={() => {
+              navigator.clipboard.writeText(user.discordId);
+            }}
+          >
+            {/* Heroicons ClipboardIcon (outline) */}
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="w-5 h-5 text-gray-600 dark:text-gray-300"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M16.5 6.75V5.25A2.25 2.25 0 0014.25 3h-4.5A2.25 2.25 0 007.5 5.25v1.5M12 12v6m0 0l-2.25-2.25M12 18l2.25-2.25M4.5 6.75A2.25 2.25 0 006.75 4.5h10.5A2.25 2.25 0 0119.5 6.75v10.5A2.25 2.25 0 0117.25 19.5H6.75A2.25 2.25 0 014.5 17.25V6.75z"
+              />
+            </svg>
+          </button>
+        </div>
+      )}
     </div>
   );
 }

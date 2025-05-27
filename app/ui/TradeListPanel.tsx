@@ -344,7 +344,6 @@ function TradeDetailModal({
           </button>
           <button
             onClick={() => {
-              console.log("모달에서 구매하기 클릭", trade._id);
               if (!trade._id) {
                 alert("tradeId가 없습니다!");
                 return;

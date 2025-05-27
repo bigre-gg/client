@@ -18,17 +18,13 @@ export default function UserProfilePage() {
     async function fetchTrade() {
       setLoading(true);
       try {
-        // 유저 정보(status API)
-        const statusRes = await fetch("/api/auth/status", {
-          credentials: "include",
-        });
-        if (statusRes.ok) {
-          const statusData = await statusRes.json();
-          setUser(statusData.user);
-          console.log(statusData.user);
+        // 유저 정보 fetch (id 기준)
+        const userRes = await fetch(`/api/users/${id}`);
+        if (userRes.ok) {
+          const userData = await userRes.json();
+          setUser(userData);
         }
         // 유저 거래목록 fetch
-
         const tradesRes = await fetch(`/api/trades/users/${id}`);
         if (tradesRes.ok) {
           const trades = await tradesRes.json();
