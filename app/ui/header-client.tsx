@@ -5,11 +5,12 @@ import { QuestionMarkCircleIcon } from "@heroicons/react/24/outline";
 import ProfileDropdown from "./profile-dropdown";
 import Image from "next/image";
 import SearchBox from "./search-box";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 
 export default function Header({ isLoggedIn }: { isLoggedIn: boolean }) {
   const [isDark, setIsDark] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -69,7 +70,7 @@ export default function Header({ isLoggedIn }: { isLoggedIn: boolean }) {
               )}
             </button>
             <button
-              onClick={() => (window.location.href = "/notice")}
+              onClick={() => router.push("/notice")}
               aria-label="공지사항"
               className="mr-2 p-2 rounded-full border border-gray-400 dark:border-gray-700 bg-lightBg dark:bg-darkBg hover:bg-gray-200 dark:hover:bg-gray-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
             >

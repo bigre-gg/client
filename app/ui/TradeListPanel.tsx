@@ -165,12 +165,12 @@ function TradeDetailModal({
       onClick={onClose}
     >
       <div
-        className="relative bg-gray-100 dark:bg-[#23272f] rounded-2xl shadow-2xl p-0 flex flex-col min-w-[340px] max-w-[95vw] w-[370px] border border-gray-700"
+        className="relative bg-gray-100 dark:bg-[#23272f] rounded-2xl shadow-2xl p-0 flex flex-col min-w-[340px] max-w-[95vw] w-[370px] border border-gray-700 transition-all duration-200 ease-out transform scale-95 opacity-0 animate-fadein-slide"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* 상단: 팝니다/삽니다, 유저 정보, X버튼 */}
+        {/* 상단: 팝니다/삽니다 + 등록일, 유저 정보, X버튼 */}
         <div className="flex items-center justify-between px-5 pt-5 pb-2">
-          <div className="flex items-center flex-1">
+          <div className="flex items-center flex-1 gap-2">
             <span
               className={`font-bold text-base px-3 py-1 rounded-xl ${
                 trade.type === "SELL"
@@ -180,14 +180,18 @@ function TradeDetailModal({
             >
               {trade.type === "SELL" ? "팝니다" : "삽니다"}
             </span>
-          </div>
-          {/* 유저 정보 */}
-          <div className="flex items-center gap-2">
             <span className="text-xs text-gray-400 whitespace-nowrap">
               {getTimeAgo(trade.createdAt)}
             </span>
-            <img src={avatar} className="w-8 h-8 rounded-full" alt="avatar" />
-            <span className="text-xs truncate max-w-[90px]">
+          </div>
+          {/* 유저 정보 */}
+          <div className="flex flex-col items-center ml-2">
+            <img
+              src={avatar}
+              className="w-8 h-8 rounded-full mb-1"
+              alt="avatar"
+            />
+            <span className="text-xs truncate max-w-[90px] text-center">
               {trade.userGlobalName}
             </span>
           </div>
@@ -719,7 +723,7 @@ export default function TradeListPanel({
               return (
                 <div
                   key={trade._id}
-                  className="rounded-lg bg-gray-100 dark:bg-[#23272f] p-1 mb-1 flex flex-col gap-0 shadow border border-gray-200 dark:border-[#2e3a4d] text-xs sm:text-[13px] cursor-pointer hover:ring-2 hover:ring-blue-400"
+                  className="rounded-lg bg-gray-100 dark:bg-[#23272f] p-1 mb-1 flex flex-col gap-0 shadow border border-gray-200 dark:border-[#2e3a4d] text-xs sm:text-[13px] cursor-pointer hover:bg-gray-200 dark:hover:bg-zinc-700 transition-colors"
                   onClick={() => handleTradeClick(trade, base)}
                 >
                   <div className="flex items-center gap-2">
@@ -929,7 +933,7 @@ export default function TradeListPanel({
               return (
                 <div
                   key={trade._id}
-                  className="rounded-lg bg-gray-100 dark:bg-[#23272f] p-1 mb-1 flex flex-col gap-0 shadow border border-gray-200 dark:border-[#2e3a4d] text-xs sm:text-[13px] cursor-pointer hover:ring-2 hover:ring-blue-400"
+                  className="rounded-lg bg-gray-100 dark:bg-[#23272f] p-1 mb-1 flex flex-col gap-0 shadow border border-gray-200 dark:border-[#2e3a4d] text-xs sm:text-[13px] cursor-pointer hover:bg-gray-200 dark:hover:bg-zinc-700 transition-colors"
                   onClick={() => handleTradeClick(trade, base)}
                 >
                   <div className="flex items-center gap-2">
@@ -1128,6 +1132,23 @@ export default function TradeListPanel({
           getCustomTags={getCustomTags}
         />
       )}
+      <style jsx global>{`
+        @keyframes fadein-slide {
+          0% {
+            opacity: 0;
+            transform: scale(0.95) translateY(30px);
+          }
+          100% {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+          }
+        }
+        .animate-fadein-slide {
+          animation: fadein-slide 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+          opacity: 1 !important;
+          transform: scale(1) translateY(0) !important;
+        }
+      `}</style>
     </div>
   );
 }
