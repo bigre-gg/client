@@ -57,14 +57,14 @@ export default function UserProfilePage() {
     if (id) fetchTrade();
   }, [id]);
 
+  const isMyProfile = myDiscordId && user && myDiscordId === user.discordId;
+
   const pendingTrades = tradeWithBaseItems.filter(
     (t: any) => t.trade.status === "PENDING"
   );
   const completedTrades = tradeWithBaseItems.filter(
     (t: any) => t.trade.status === "COMPLETED"
   );
-
-  const isMyProfile = myDiscordId && user && myDiscordId === user.discordId;
 
   if (loading)
     return (
@@ -96,37 +96,27 @@ export default function UserProfilePage() {
       </div>
       {/* 우측: 거래 리스트 */}
       <div className="flex-1 flex flex-col gap-8">
-        {/* 진행중 거래 */}
+        {/* 진행중 거래 패널 */}
         <div>
           <div className="font-bold text-lg mb-2">진행중 거래</div>
-          {pendingTrades.length === 0 ? (
-            <div className="text-gray-400 text-center">
-              진행중 거래가 없습니다.
-            </div>
-          ) : (
-            <TradeListPanel
-              tradesWithBaseItem={pendingTrades}
-              showFilterBar={false}
-              heightClass="h-[400px] max-h-[400px]"
-              isMyProfile={isMyProfile}
-            />
-          )}
+          <TradeListPanel
+            tradesWithBaseItem={pendingTrades}
+            showFilterBar={false}
+            heightClass="h-[400px] max-h-[400px]"
+            isMyProfile={isMyProfile}
+            disablePendingFilter={true}
+          />
         </div>
-        {/* 완료된 거래 */}
+        {/* 완료된 거래 패널 */}
         <div>
           <div className="font-bold text-lg mb-2">완료된 거래</div>
-          {completedTrades.length === 0 ? (
-            <div className="text-gray-400 text-center">
-              완료된 거래가 없습니다.
-            </div>
-          ) : (
-            <TradeListPanel
-              tradesWithBaseItem={completedTrades}
-              showFilterBar={false}
-              heightClass="h-[400px] max-h-[400px]"
-              isMyProfile={isMyProfile}
-            />
-          )}
+          <TradeListPanel
+            tradesWithBaseItem={completedTrades}
+            showFilterBar={false}
+            heightClass="h-[400px] max-h-[400px]"
+            isMyProfile={isMyProfile}
+            disablePendingFilter={true}
+          />
         </div>
       </div>
     </div>

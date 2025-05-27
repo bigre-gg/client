@@ -18,6 +18,7 @@ interface TradeListPanelProps {
   filter?: any;
   heightClass?: string;
   isMyProfile?: boolean;
+  disablePendingFilter?: boolean;
 }
 
 // 옵션 한글/영문 번역 테이블
@@ -660,6 +661,7 @@ export default function TradeListPanel(props: TradeListPanelProps) {
     filter,
     heightClass,
     isMyProfile = false,
+    disablePendingFilter = false,
   } = props;
   const [data, setData] = useState(tradesWithBaseItem || []);
   const [showPendingOnly, setShowPendingOnly] = useState(true);
@@ -738,6 +740,19 @@ export default function TradeListPanel(props: TradeListPanelProps) {
     arr = arr.filter((t: any) =>
       isProfileMode ? t && t.trade && t.trade.createdAt : t && t.createdAt
     );
+    // 'CANCEL' 또는 'CANCELED' 상태는 항상 제외
+    arr = arr.filter((t: any) => {
+      const status = isProfileMode ? t.trade.status : t.status;
+      return status !== "CANCEL" && status !== "CANCELED";
+    });
+    // disablePendingFilter가 true면 showPendingOnly 필터를 건너뜀
+    if (!props.disablePendingFilter && showPendingOnly) {
+      arr = arr.filter((t: any) => {
+        const status = isProfileMode ? t.trade.status : t.status;
+        return status === "PENDING";
+      });
+    }
+    // showPendingOnly가 false면 status 상관없이 모두 보여줌(단, 취소 제외)
     // 필터 적용: 기본값과 다를 때만 필터링
     if (filter && !isDefaultFilter(filter, baseItem)) {
       arr = arr.filter((t: any) => {
@@ -852,13 +867,75 @@ export default function TradeListPanel(props: TradeListPanelProps) {
       );
     }
     return arr;
-  }, [data, sortType, filter, baseItem, tradesWithBaseItem]);
+  }, [
+    data,
+    sortType,
+    filter,
+    baseItem,
+    tradesWithBaseItem,
+    showPendingOnly,
+    props.disablePendingFilter,
+  ]);
+
   const sellTrades = filteredTrades.filter(
     (t: any) => (isProfileMode ? t.trade.type : t.type) === "SELL"
   );
   const buyTrades = filteredTrades.filter(
     (t: any) => (isProfileMode ? t.trade.type : t.type) === "BUY"
   );
+
+  // 진단용 로그 추가
+  useEffect(() => {
+    // 타입 에러 방지용 any 캐스팅
+    console.log(
+      "filteredTrades:",
+      filteredTrades.map((t) =>
+        isProfileMode
+          ? {
+              status: (t as any).trade?.status,
+              type: (t as any).trade?.type,
+              id: (t as any).trade?._id,
+            }
+          : {
+              status: (t as any).status,
+              type: (t as any).type,
+              id: (t as any)._id,
+            }
+      )
+    );
+    console.log(
+      "sellTrades:",
+      sellTrades.map((t) =>
+        isProfileMode
+          ? {
+              status: (t as any).trade?.status,
+              type: (t as any).trade?.type,
+              id: (t as any).trade?._id,
+            }
+          : {
+              status: (t as any).status,
+              type: (t as any).type,
+              id: (t as any)._id,
+            }
+      )
+    );
+    console.log(
+      "buyTrades:",
+      buyTrades.map((t) =>
+        isProfileMode
+          ? {
+              status: (t as any).trade?.status,
+              type: (t as any).trade?.type,
+              id: (t as any).trade?._id,
+            }
+          : {
+              status: (t as any).status,
+              type: (t as any).type,
+              id: (t as any)._id,
+            }
+      )
+    );
+  }, [filteredTrades, sellTrades, buyTrades]);
 
   // 디스코드 아바타 url
   function getDiscordAvatarUrl(
