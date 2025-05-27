@@ -13,11 +13,20 @@ export default function UserProfilePage() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const [tradeWithBaseItems, setTradeWithBaseItems] = useState<any[]>([]);
+  const [myDiscordId, setMyDiscordId] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchTrade() {
       setLoading(true);
       try {
+        // 내 디스코드 ID fetch
+        const statusRes = await fetch("/api/auth/status", {
+          credentials: "include",
+        });
+        if (statusRes.ok) {
+          const statusData = await statusRes.json();
+          setMyDiscordId(statusData.user?.discordId || null);
+        }
         // 유저 정보 fetch (id 기준)
         const userRes = await fetch(`/api/users/${id}`);
         if (userRes.ok) {
@@ -54,6 +63,8 @@ export default function UserProfilePage() {
   const completedTrades = tradeWithBaseItems.filter(
     (t: any) => t.trade.status === "COMPLETED"
   );
+
+  const isMyProfile = myDiscordId && user && myDiscordId === user.discordId;
 
   if (loading)
     return (
@@ -97,6 +108,7 @@ export default function UserProfilePage() {
               tradesWithBaseItem={pendingTrades}
               showFilterBar={false}
               heightClass="h-[400px] max-h-[400px]"
+              isMyProfile={isMyProfile}
             />
           )}
         </div>
@@ -112,6 +124,7 @@ export default function UserProfilePage() {
               tradesWithBaseItem={completedTrades}
               showFilterBar={false}
               heightClass="h-[400px] max-h-[400px]"
+              isMyProfile={isMyProfile}
             />
           )}
         </div>

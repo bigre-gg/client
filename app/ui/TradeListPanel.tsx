@@ -17,6 +17,7 @@ interface TradeListPanelProps {
   trades?: any[];
   filter?: any;
   heightClass?: string;
+  isMyProfile?: boolean;
 }
 
 // 옵션 한글/영문 번역 테이블
@@ -143,6 +144,7 @@ function TradeDetailModal({
   getOptionTags,
   getPotentialTags,
   getCustomTags,
+  isMyProfile = false,
 }: {
   trade: any;
   baseItem: any;
@@ -150,8 +152,10 @@ function TradeDetailModal({
   getOptionTags: (base: any, trade: any) => string[];
   getPotentialTags: (trade: any) => string[];
   getCustomTags: (trade: any) => string[];
+  isMyProfile?: boolean;
 }) {
   const router = useRouter();
+  const [showManageActions, setShowManageActions] = useState(false);
   if (!trade) return null;
   const isEquip = (trade.itemType || baseItem.type) === "EQUIP";
   // 유저 정보
@@ -165,7 +169,7 @@ function TradeDetailModal({
       onClick={onClose}
     >
       <div
-        className="relative bg-gray-100 dark:bg-[#23272f] rounded-2xl shadow-2xl p-0 flex flex-col min-w-[340px] max-w-[95vw] w-[370px] border border-gray-700 transition-all duration-200 ease-out transform scale-95 opacity-0 animate-fadein-slide"
+        className="relative bg-gray-100 dark:bg-[#23272f] rounded-2xl shadow-2xl p-0 flex flex-col min-w-[340px] max-w-[95vw] w-[370px] border border-gray-700 transition-all duration-200 ease-out transform scale-95 opacity-100"
         onClick={(e) => e.stopPropagation()}
       >
         {/* 상단: 팝니다/삽니다 + 등록일, 유저 정보, X버튼 */}
@@ -333,6 +337,29 @@ function TradeDetailModal({
                 : "제안 받음"}
             </span>
           </div>
+          {isMyProfile && (
+            <div className="flex flex-col items-center my-4">
+              <button
+                className="w-full max-w-xs p-3 rounded bg-gray-300 dark:bg-zinc-700 text-black dark:text-white text-base font-bold mb-3 hover:bg-gray-400 dark:hover:bg-zinc-600 transition"
+                onClick={() => setShowManageActions((v) => !v)}
+              >
+                관리
+              </button>
+              {showManageActions && (
+                <div className="w-full max-w-xs bg-white dark:bg-zinc-800 rounded-xl shadow-lg p-4 flex flex-col gap-3 animate-fadein">
+                  <button className="w-full p-2 rounded bg-gray-200 dark:bg-zinc-700 text-black dark:text-white font-semibold hover:bg-gray-300 dark:hover:bg-zinc-600 transition">
+                    가격/코멘트/월드 수정
+                  </button>
+                  <button className="w-full p-2 rounded bg-gray-200 dark:bg-zinc-700 text-black dark:text-white font-semibold hover:bg-gray-300 dark:hover:bg-zinc-600 transition">
+                    거래 완료
+                  </button>
+                  <button className="w-full p-2 rounded bg-gray-200 dark:bg-zinc-700 text-black dark:text-white font-semibold hover:bg-gray-300 dark:hover:bg-zinc-600 transition">
+                    거래 취소
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
         {/* 하단 버튼 */}
         <div className="flex justify-between items-center px-5 pb-5 pt-2 gap-2">
@@ -355,6 +382,21 @@ function TradeDetailModal({
             구매하기
           </button>
         </div>
+        <style jsx global>{`
+          @keyframes fadein {
+            from {
+              opacity: 0;
+              transform: translateY(10px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+          .animate-fadein {
+            animation: fadein 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+          }
+        `}</style>
       </div>
     </div>
   );
@@ -372,17 +414,19 @@ function getTimeAgo(dateStr: string) {
   return `${Math.floor(diff / 86400)}일 전`;
 }
 
-export default function TradeListPanel({
-  tradesWithBaseItem,
-  showFilterBar = true,
-  itemId,
-  itemMeta,
-  baseItem,
-  baseItems,
-  trades: propTrades,
-  filter,
-  heightClass,
-}: TradeListPanelProps) {
+export default function TradeListPanel(props: TradeListPanelProps) {
+  const {
+    tradesWithBaseItem,
+    showFilterBar = true,
+    itemId,
+    itemMeta,
+    baseItem,
+    baseItems,
+    trades: propTrades,
+    filter,
+    heightClass,
+    isMyProfile = false,
+  } = props;
   const [data, setData] = useState(tradesWithBaseItem || []);
   const [showPendingOnly, setShowPendingOnly] = useState(true);
   const [sortType, setSortType] = useState<
@@ -1129,25 +1173,9 @@ export default function TradeListPanel({
           getOptionTags={getOptionTags}
           getPotentialTags={getPotentialTags}
           getCustomTags={getCustomTags}
+          isMyProfile={isMyProfile}
         />
       )}
-      <style jsx global>{`
-        @keyframes fadein-slide {
-          0% {
-            opacity: 0;
-            transform: scale(0.95) translateY(30px);
-          }
-          100% {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-          }
-        }
-        .animate-fadein-slide {
-          animation: fadein-slide 0.22s cubic-bezier(0.4, 0, 0.2, 1);
-          opacity: 1 !important;
-          transform: scale(1) translateY(0) !important;
-        }
-      `}</style>
     </div>
   );
 }
