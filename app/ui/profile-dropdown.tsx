@@ -1,6 +1,7 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 interface UserData {
   id: string;
@@ -8,6 +9,7 @@ interface UserData {
   globalName: string;
   email: string;
   avatar: string | null;
+  discordId?: string;
 }
 
 export default function ProfileDropdown({
@@ -18,6 +20,7 @@ export default function ProfileDropdown({
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [user, setUser] = useState<UserData | null>(null);
+  const router = useRouter();
 
   // 바깥 클릭 시 드롭다운 닫기
   useEffect(() => {
@@ -88,12 +91,18 @@ export default function ProfileDropdown({
             (open ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2")
           }
         >
-          <a
-            href="/profile"
-            className="block px-4 py-2 text-darkBg dark:text-lightBg hover:bg-gray-200 dark:hover:bg-gray-800"
+          <button
+            type="button"
+            className="block w-full text-left px-4 py-2 text-darkBg dark:text-lightBg hover:bg-gray-200 dark:hover:bg-gray-800"
+            onClick={() => {
+              if (user?.id || user?.discordId) {
+                router.push(`/profile/${user.discordId || user.id}`);
+                setOpen(false);
+              }
+            }}
           >
             프로필
-          </a>
+          </button>
           <form action="/api/auth/logout" method="POST">
             <button
               type="submit"

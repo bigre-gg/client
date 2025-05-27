@@ -16,6 +16,7 @@ interface TradeListPanelProps {
   baseItems?: any[];
   trades?: any[];
   filter?: any;
+  heightClass?: string;
 }
 
 // 옵션 한글/영문 번역 테이블
@@ -139,7 +140,6 @@ function TradeDetailModal({
   trade,
   baseItem,
   onClose,
-  onBuy,
   getOptionTags,
   getPotentialTags,
   getCustomTags,
@@ -147,11 +147,11 @@ function TradeDetailModal({
   trade: any;
   baseItem: any;
   onClose: () => void;
-  onBuy: (tradeId: string) => void;
   getOptionTags: (base: any, trade: any) => string[];
   getPotentialTags: (trade: any) => string[];
   getCustomTags: (trade: any) => string[];
 }) {
+  const router = useRouter();
   if (!trade) return null;
   const isEquip = (trade.itemType || baseItem.type) === "EQUIP";
   // 유저 정보
@@ -339,7 +339,14 @@ function TradeDetailModal({
             닫기
           </button>
           <button
-            onClick={() => onBuy(trade._id)}
+            onClick={() => {
+              console.log("모달에서 구매하기 클릭", trade._id);
+              if (!trade._id) {
+                alert("tradeId가 없습니다!");
+                return;
+              }
+              router.push(`/trade/${trade._id}`);
+            }}
             className="flex-1 py-2 rounded bg-blue-600 text-white font-bold text-base hover:bg-blue-700 ml-2"
           >
             구매하기
@@ -371,6 +378,7 @@ export default function TradeListPanel({
   baseItems,
   trades: propTrades,
   filter,
+  heightClass,
 }: TradeListPanelProps) {
   const [data, setData] = useState(tradesWithBaseItem || []);
   const [showPendingOnly, setShowPendingOnly] = useState(true);
@@ -378,7 +386,10 @@ export default function TradeListPanel({
     "latest" | "oldest" | "price-asc" | "price-desc"
   >("latest");
   const router = useRouter();
-  const [selectedTrade, setSelectedTrade] = useState<any>(null);
+  const [selectedTrade, setSelectedTrade] = useState<{
+    trade: any;
+    baseItem: any;
+  } | null>(null);
 
   // fetch trades if not provided
   useEffect(() => {
@@ -446,6 +457,86 @@ export default function TradeListPanel({
     arr = arr.filter((t: any) =>
       isProfileMode ? t && t.trade && t.trade.createdAt : t && t.createdAt
     );
+    // 필터 적용: 기본값과 다를 때만 필터링
+    if (filter && !isDefaultFilter(filter, baseItem)) {
+      arr = arr.filter((t: any) => {
+        const trade = isProfileMode ? t.trade : t;
+        const base = isProfileMode ? t.baseItem : baseItem;
+        // 가격
+        if (filter.priceMin && trade.itemPrice < Number(filter.priceMin))
+          return false;
+        if (filter.priceMax && trade.itemPrice > Number(filter.priceMax))
+          return false;
+        // 작횟수
+        if (filter.scrollMin && trade.upgradeCount < Number(filter.scrollMin))
+          return false;
+        if (filter.scrollMax && trade.upgradeCount > Number(filter.scrollMax))
+          return false;
+        // 가능 업횟수
+        if (filter.tucMin && trade.tuc < Number(filter.tucMin)) return false;
+        if (filter.tucMax && trade.tuc > Number(filter.tucMax)) return false;
+        // 일반 옵션 필터 (inc로 시작)
+        for (const key in filter) {
+          if (
+            key.endsWith("Min") &&
+            key !== "priceMin" &&
+            key !== "scrollMin" &&
+            key !== "tucMin" &&
+            key.startsWith("inc")
+          ) {
+            const optKey = key.replace(/Min$/, "");
+            if (
+              trade.options &&
+              filter[key] !== undefined &&
+              filter[key] !== "" &&
+              (trade.options[optKey] ?? 0) < Number(filter[key])
+            )
+              return false;
+          }
+          if (
+            key.endsWith("Max") &&
+            key !== "priceMax" &&
+            key !== "scrollMax" &&
+            key !== "tucMax" &&
+            key.startsWith("inc")
+          ) {
+            const optKey = key.replace(/Max$/, "");
+            if (
+              trade.options &&
+              filter[key] !== undefined &&
+              filter[key] !== "" &&
+              (trade.options[optKey] ?? 0) > Number(filter[key])
+            )
+              return false;
+          }
+        }
+        // 잠재옵션 필터 (inc로 시작하지 않음)
+        for (const key in filter) {
+          if (key.endsWith("Min") && !key.startsWith("inc")) {
+            const optKey = key.replace(/Min$/, "");
+            if (
+              trade.potentialOptions &&
+              filter[key] !== undefined &&
+              filter[key] !== "" &&
+              (trade.potentialOptions[optKey] ?? 0) < Number(filter[key])
+            )
+              return false;
+          }
+          if (key.endsWith("Max") && !key.startsWith("inc")) {
+            const optKey = key.replace(/Max$/, "");
+            if (
+              trade.potentialOptions &&
+              filter[key] !== undefined &&
+              filter[key] !== "" &&
+              (trade.potentialOptions[optKey] ?? 0) > Number(filter[key])
+            )
+              return false;
+          }
+        }
+        return true;
+      });
+    }
+    // 정렬
     if (sortType === "latest") {
       arr = [...arr].sort((a: any, b: any) => {
         const aTime = isProfileMode
@@ -537,13 +628,9 @@ export default function TradeListPanel({
     return trade.customOptions.map((opt: any) => `${opt.label} ${opt.value}`);
   }
 
-  const handleTradeClick = (trade: any) => setSelectedTrade(trade);
+  const handleTradeClick = (trade: any, baseItem: any) =>
+    setSelectedTrade({ trade, baseItem });
   const handleCloseModal = () => setSelectedTrade(null);
-  const handleBuy = (tradeId: string) => {
-    // 상세페이지로 이동
-    router.push(`/trade/${tradeId}`);
-    setSelectedTrade(null);
-  };
 
   return (
     <div className="w-full min-w-0">
@@ -604,7 +691,11 @@ export default function TradeListPanel({
           </button>
         </div>
       )}
-      <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full h-[700px] max-h-[700px]">
+      <div
+        className={`flex flex-col sm:flex-row gap-2 sm:gap-4 w-full ${
+          heightClass || "h-[700px] max-h-[700px]"
+        }`}
+      >
         {/* 팝니다 */}
         <div className="flex-1 bg-white dark:bg-[#181c23] rounded-lg p-2 flex flex-col min-w-0 sm:min-w-[320px] sm:max-w-[500px] border border-gray-300 dark:border-zinc-700 mb-2 sm:mb-0">
           <div
@@ -629,7 +720,7 @@ export default function TradeListPanel({
                 <div
                   key={trade._id}
                   className="rounded-lg bg-gray-100 dark:bg-[#23272f] p-1 mb-1 flex flex-col gap-0 shadow border border-gray-200 dark:border-[#2e3a4d] text-xs sm:text-[13px] cursor-pointer hover:ring-2 hover:ring-blue-400"
-                  onClick={() => handleTradeClick({ trade, baseItem: base })}
+                  onClick={() => handleTradeClick(trade, base)}
                 >
                   <div className="flex items-center gap-2">
                     <div className="relative">
@@ -839,7 +930,7 @@ export default function TradeListPanel({
                 <div
                   key={trade._id}
                   className="rounded-lg bg-gray-100 dark:bg-[#23272f] p-1 mb-1 flex flex-col gap-0 shadow border border-gray-200 dark:border-[#2e3a4d] text-xs sm:text-[13px] cursor-pointer hover:ring-2 hover:ring-blue-400"
-                  onClick={() => handleTradeClick({ trade, baseItem: base })}
+                  onClick={() => handleTradeClick(trade, base)}
                 >
                   <div className="flex items-center gap-2">
                     <div className="relative">
@@ -1027,12 +1118,11 @@ export default function TradeListPanel({
         </div>
       </div>
       {/* 거래 상세 모달 */}
-      {selectedTrade && (
+      {selectedTrade && selectedTrade.trade && (
         <TradeDetailModal
           trade={selectedTrade.trade}
           baseItem={selectedTrade.baseItem}
           onClose={handleCloseModal}
-          onBuy={handleBuy}
           getOptionTags={getOptionTags}
           getPotentialTags={getPotentialTags}
           getCustomTags={getCustomTags}

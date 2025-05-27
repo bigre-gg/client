@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { SunIcon, MoonIcon } from "@heroicons/react/24/solid";
+import { QuestionMarkCircleIcon } from "@heroicons/react/24/outline";
 import ProfileDropdown from "./profile-dropdown";
 import Image from "next/image";
 import SearchBox from "./search-box";
@@ -59,13 +60,20 @@ export default function Header({ isLoggedIn }: { isLoggedIn: boolean }) {
               onClick={toggleTheme}
               onMouseDown={(e) => e.preventDefault()}
               aria-label="다크/라이트 모드 토글"
-              className="mr-4 p-2 rounded-full border border-gray-400 dark:border-gray-700 bg-lightBg dark:bg-darkBg hover:bg-gray-200 dark:hover:bg-gray-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="mr-1 p-2 rounded-full border border-gray-400 dark:border-gray-700 bg-lightBg dark:bg-darkBg hover:bg-gray-200 dark:hover:bg-gray-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
             >
               {isDark ? (
                 <SunIcon className="w-5 h-5 text-yellow-400" />
               ) : (
                 <MoonIcon className="w-5 h-5 text-gray-700" />
               )}
+            </button>
+            <button
+              onClick={() => (window.location.href = "/notice")}
+              aria-label="공지사항"
+              className="mr-2 p-2 rounded-full border border-gray-400 dark:border-gray-700 bg-lightBg dark:bg-darkBg hover:bg-gray-200 dark:hover:bg-gray-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+            >
+              <QuestionMarkCircleIcon className="w-5 h-5 text-blue-500" />
             </button>
             {!isLoggedIn ? (
               <a href="/api/auth/discord">

@@ -34,6 +34,10 @@ export default function RootLayout({
           </aside>
           {/* 메인 콘텐츠 */}
           <main className="flex-1 flex flex-col items-center md:items-start px-2 md:px-4 py-4 md:py-8 max-w-6xl mx-auto w-full">
+            {/* 상단 광고/여백 */}
+            <div className="w-full h-16 md:h-20 flex items-center justify-center mb-4">
+              {/* 상단 광고 자리 */}
+            </div>
             {children}
           </main>
           {/* 우측 광고 */}

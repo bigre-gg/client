@@ -100,6 +100,7 @@ export default function UserProfilePage() {
             <TradeListPanel
               tradesWithBaseItem={pendingTrades}
               showFilterBar={false}
+              heightClass="h-[400px] max-h-[400px]"
             />
           )}
         </div>
@@ -114,6 +115,7 @@ export default function UserProfilePage() {
             <TradeListPanel
               tradesWithBaseItem={completedTrades}
               showFilterBar={false}
+              heightClass="h-[400px] max-h-[400px]"
             />
           )}
         </div>

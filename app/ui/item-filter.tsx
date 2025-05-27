@@ -326,7 +326,26 @@ export default function ItemFilter({
 
   // 필터 초기화(되돌리기) 함수: 완전 해제
   function handleReset() {
-    setFilters({});
+    if (isOthers) {
+      setFilters({ priceMin: "0", priceMax: "1000000000" });
+    } else {
+      const base: any = {
+        priceMin: "0",
+        priceMax: "1000000000",
+        scrollMin: "0",
+        scrollMax: (item.tuc || 0).toString(),
+        tucMin: "0",
+        tucMax: (item.tuc || 0).toString(),
+      };
+      if (item.options) {
+        Object.keys(item.options).forEach((key) => {
+          const value = item.options?.[key] ?? 0;
+          base[key + "Min"] = value.toString();
+          base[key + "Max"] = value.toString();
+        });
+      }
+      setFilters(base);
+    }
     setAddedOptionKeys([]);
     setAddedPotentialKeys([]);
     if (onApply) onApply({});

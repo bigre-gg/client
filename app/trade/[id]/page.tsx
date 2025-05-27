@@ -187,16 +187,18 @@ export default function TradeDetailPage() {
       : "진행중";
 
   return (
-    <div className="flex flex-col md:flex-row gap-6 w-full max-w-5xl mx-auto py-8 px-2">
+    <div className="flex flex-col md:flex-row gap-6 w-full max-w-5xl mx-auto py-2 px-2">
       {/* 좌측: 유저 프로필 */}
-      <UserProfileCard
-        user={user}
-        onReport={() => alert("신고 기능은 준비 중입니다.")}
-        onProfileClick={() => {
-          const userId = user?.userId || user?.discordId;
-          if (userId) router.push(`/profile/${userId}`);
-        }}
-      />
+      <div className="self-start">
+        <UserProfileCard
+          user={user}
+          onReport={() => alert("신고 기능은 준비 중입니다.")}
+          onProfileClick={() => {
+            const userId = user?.userId || user?.discordId;
+            if (userId) router.push(`/profile/${userId}`);
+          }}
+        />
+      </div>
       {/* 우측: 거래 상세 */}
       <div className="flex-1 bg-white dark:bg-[#23272f] rounded-2xl shadow p-6 border border-gray-200 dark:border-zinc-700 flex flex-col items-center justify-center">
         {/* 거래시 주의사항 안내 - 팝니다/삽니다 위쪽 */}

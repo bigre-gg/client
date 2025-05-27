@@ -31,7 +31,7 @@ export default function UserProfileCard({
             ? `https://cdn.discordapp.com/avatars/${user.discordId}/${user.avatar}.png`
             : `https://cdn.discordapp.com/embed/avatars/0.png`
         }
-        className="w-20 h-20 rounded-full mb-3 border-2 border-blue-500 mt-8"
+        className="w-20 h-20 rounded-full mb-3 border-2 border-blue-500 mt-2"
         alt="avatar"
       />
       <div className="text-lg text-black dark:text-white mb-1">
@@ -80,12 +80,6 @@ export default function UserProfileCard({
       <div className="text-xs text-gray-400 mb-2">
         가입일: {userCreatedAtStr}
       </div>
-      <button
-        className="w-full py-2 rounded bg-red-500 text-white font-bold text-base hover:bg-red-600 mb-3"
-        onClick={onReport}
-      >
-        신고하기
-      </button>
       <button
         className="w-full py-2 rounded bg-blue-600 text-white font-bold text-base hover:bg-blue-700 mt-4"
         onClick={onProfileClick}
