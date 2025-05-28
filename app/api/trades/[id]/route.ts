@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   req: NextRequest,
-  context: { params: { id: number } }
+  context: { params: { id: string } }
 ) {
   const { id } = context.params;
   if (!id) {
@@ -32,7 +32,7 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  context: { params: { id: number } }
+  context: { params: { id: string } }
 ) {
   const { id } = context.params;
   if (!id) {
