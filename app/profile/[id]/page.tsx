@@ -8,8 +8,8 @@ import { getItemById } from "@/lib/items";
 
 export default function UserProfilePage() {
   const router = useRouter();
-  const params = useParams();
-  const { id } = params as { id: string };
+  const params = useParams<{ id: string }>();
+  const { id } = params;
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const [tradeWithBaseItems, setTradeWithBaseItems] = useState<any[]>([]);

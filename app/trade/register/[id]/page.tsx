@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { ItemApiResponse, getItemById } from "@/lib/items";
 import EditableItemDetailBody from "@/app/ui/EditableItemDetailBody";
 import NonEquipItemDetail from "@/app/ui/NonEquipItemDetail";
@@ -28,11 +28,8 @@ interface ItemData {
   isEquip: boolean;
 }
 
-export default function TradeRegisterPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+export default function TradeRegisterPage() {
+  const params = useParams<{ id: string }>();
   const router = useRouter();
   const [item, setItem] = useState<Partial<ItemApiResponse>>({});
   const [type, setType] = useState("SELL");

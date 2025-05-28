@@ -89,8 +89,8 @@ function getCustomTags(trade: any) {
 
 export default function TradeDetailPage() {
   const router = useRouter();
-  const params = useParams();
-  const { id } = params as { id: string };
+  const params = useParams<{ id: string }>();
+  const { id } = params;
   const [trade, setTrade] = useState<any>(null);
   const [baseItem, setBaseItem] = useState<ItemApiResponse | null>(null);
   const [loading, setLoading] = useState(true);
