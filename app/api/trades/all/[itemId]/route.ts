@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   req: NextRequest,
-  context: { params: { itemId: string } }
+  { params }: { params: { itemId: string } }
 ) {
   try {
-    const { itemId } = await context.params;
+    const { itemId } = params;
     if (!itemId) {
       return new NextResponse("itemId is required", { status: 400 });
     }
