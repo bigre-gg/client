@@ -96,6 +96,23 @@ export default function UserProfilePage() {
       </div>
       {/* 우측: 거래 리스트 */}
       <div className="flex-1 flex flex-col gap-8">
+        {/* 안내 문구 카드 */}
+        <div className="w-full flex justify-center">
+          <div className="w-full max-w-2xl bg-blue-50 dark:bg-zinc-800 border border-blue-200 dark:border-zinc-700 rounded-xl shadow px-6 py-4 mb-2 text-center">
+            <span className="font-semibold text-blue-700 dark:text-blue-300 text-base">
+              거래 전, 후에 반드시
+              <a
+                href="/notice/trade-manage"
+                className="underline text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 ml-1"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                가이드의 지침
+              </a>
+              을 따라주세요.
+            </span>
+          </div>
+        </div>
         {/* 진행중 거래 패널 */}
         <div>
           <div className="font-bold text-lg mb-2">진행중 거래</div>

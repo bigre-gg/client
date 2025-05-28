@@ -26,14 +26,14 @@ export default function NoticeTradePage() {
             아이템을 검색한 후 특정 아이템을 클릭하여 거래 목록 페이지로 이동
             <div className="mt-2">
               <img
-                src="/notice/trade/1.png"
+                src="/notice/trade-register/1.png"
                 alt="거래 안내 1"
                 className="w-full max-w-[500px] h-auto object-contain rounded bg-gray-200 dark:bg-zinc-800 border border-gray-300 dark:border-zinc-700 mx-auto mt-2"
               />
             </div>
             <div className="mt-2">
               <img
-                src="/notice/trade/2.png"
+                src="/notice/trade-register/2.png"
                 alt="거래 안내 2"
                 className="w-full max-w-[900px] max-h-[800px] h-auto object-contain rounded bg-gray-200 dark:bg-zinc-800 border border-gray-300 dark:border-zinc-700 mx-auto mt-2"
               />
@@ -43,7 +43,7 @@ export default function NoticeTradePage() {
           <li>
             거래 목록 페이지에서 아이템 등록 버튼 클릭
             <img
-              src="/notice/trade/3.png"
+              src="/notice/trade-register/3.png"
               alt="거래 안내 3"
               className="w-full max-w-[500px] h-auto object-contain rounded bg-gray-200 dark:bg-zinc-800 border border-gray-300 dark:border-zinc-700 mx-auto mt-2"
             />
@@ -53,12 +53,12 @@ export default function NoticeTradePage() {
             아이템 옵션이나 (장비 아이템) 세부 옵션 (가격, 수량 등등)을 입력하고
             등록하기 버튼 클릭
             <img
-              src="/notice/trade/4.png"
+              src="/notice/trade-register/4.png"
               alt="거래 안내 4"
               className="w-full max-w-[900px] max-h-[800px] h-auto object-contain rounded bg-gray-200 dark:bg-zinc-800 border border-gray-300 dark:border-zinc-700 mx-auto mt-2"
             />
             <img
-              src="/notice/trade/5.png"
+              src="/notice/trade-register/5.png"
               alt="거래 안내 5"
               className="w-full max-w-[900px] max-h-[800px] h-auto object-contain rounded bg-gray-200 dark:bg-zinc-800 border border-gray-300 dark:border-zinc-700 mx-auto mt-2"
             />
@@ -71,7 +71,7 @@ export default function NoticeTradePage() {
           <li>
             아이템 등록 후 디스코드 연락을 기다려주세요.
             <img
-              src="/notice/trade/6.png"
+              src="/notice/trade-register/6.png"
               alt="거래 안내 6"
               className="w-full max-w-[900px] max-h-[800px] h-auto object-contain rounded bg-gray-200 dark:bg-zinc-800 border border-gray-300 dark:border-zinc-700 mx-auto mt-2"
             />
@@ -91,7 +91,7 @@ export default function NoticeTradePage() {
           <li>
             거래 목록에서 구매 또는 판매할 아이템을 클릭
             <img
-              src="/notice/trade/7.png"
+              src="/notice/trade-register/7.png"
               alt="거래 안내 7"
               className="w-full max-w-[900px] max-h-[800px] h-auto object-contain rounded bg-gray-200 dark:bg-zinc-800 border border-gray-300 dark:border-zinc-700 mx-auto mt-2"
             />
@@ -100,7 +100,7 @@ export default function NoticeTradePage() {
           <li>
             구매하기 버튼을 클릭하여 상세 정보 페이지로 이동
             <img
-              src="/notice/trade/8.png"
+              src="/notice/trade-register/8.png"
               alt="거래 안내 8"
               className="w-full max-w-[900px] max-h-[800px] h-auto object-contain rounded bg-gray-200 dark:bg-zinc-800 border border-gray-300 dark:border-zinc-700 mx-auto mt-2"
             />
@@ -112,7 +112,7 @@ export default function NoticeTradePage() {
           <li>
             아이템 옵션 밑 메세지 복사 후 디스코드 버튼 클릭
             <img
-              src="/notice/trade/9.png"
+              src="/notice/trade-register/9.png"
               alt="거래 안내 9"
               className="w-full max-w-[500px] h-auto object-contain rounded bg-gray-200 dark:bg-zinc-800 border border-gray-300 dark:border-zinc-700 mx-auto mt-2"
             />
@@ -121,7 +121,7 @@ export default function NoticeTradePage() {
           <li>
             디스코드 창이 열리면 친구 추가하기 좌측의 말풍선을 클릭
             <img
-              src="/notice/trade/10.png"
+              src="/notice/trade-register/10.png"
               alt="거래 안내 10"
               className="w-full max-w-[500px] h-auto object-contain rounded bg-gray-200 dark:bg-zinc-800 border border-gray-300 dark:border-zinc-700 mx-auto mt-2"
             />
@@ -130,7 +130,7 @@ export default function NoticeTradePage() {
           <li>
             복사된 메세지를 붙여넣기 한 후에 거래를 시작하세요!
             <img
-              src="/notice/trade/11.png"
+              src="/notice/trade-register/11.png"
               alt="거래 안내 11"
               className="w-full max-w-[500px] h-auto object-contain rounded bg-gray-200 dark:bg-zinc-800 border border-gray-300 dark:border-zinc-700 mx-auto mt-2"
             />
