@@ -5,10 +5,10 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { discordId: string } }
+  { params }: { params: Promise<{ discordId: string }> }
 ) {
   try {
-    const { discordId } = params;
+    const { discordId } = await params;
     if (!discordId) {
       return new NextResponse("discordId is required", { status: 400 });
     }
