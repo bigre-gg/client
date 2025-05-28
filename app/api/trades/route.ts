@@ -4,15 +4,18 @@ export async function POST(req: NextRequest) {
   try {
     const data = await req.json();
     // 실제 백엔드로 프록시 POST 요청
-    const backendRes = await fetch("http://localhost:8000/trades", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        cookie: req.headers.get("cookie") || "",
-      },
-      credentials: "include",
-      body: JSON.stringify(data),
-    });
+    const backendRes = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/trades`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          cookie: req.headers.get("cookie") || "",
+        },
+        credentials: "include",
+        body: JSON.stringify(data),
+      }
+    );
 
     const contentType = backendRes.headers.get("content-type");
     if (!backendRes.ok) {

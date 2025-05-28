@@ -4,13 +4,16 @@ export async function GET(req: NextRequest) {
   try {
     console.log("API Route Received Cookie Header:", req.headers.get("cookie"));
     // NestJS 백엔드의 유저 상태 엔드포인트로 쿠키 포함하여 요청
-    const backendRes = await fetch("http://localhost:8000/auth/status", {
-      method: "GET", // 또는 백엔드 엔드포인트에 맞는 HTTP 메소드
-      headers: {
-        cookie: req.headers.get("cookie") || "",
-      },
-      credentials: "include",
-    });
+    const backendRes = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/status`,
+      {
+        method: "GET", // 또는 백엔드 엔드포인트에 맞는 HTTP 메소드
+        headers: {
+          cookie: req.headers.get("cookie") || "",
+        },
+        credentials: "include",
+      }
+    );
 
     if (!backendRes.ok) {
       const text = await backendRes.text();

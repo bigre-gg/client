@@ -69,9 +69,12 @@ export default function ItemDetail() {
   // trade 데이터 불러오기
   useEffect(() => {
     if (!itemId) return;
-    fetch(`/api/trades?itemId=${itemId}`)
+    fetch(`/api/trades/${itemId}`)
       .then((res) => res.json())
-      .then((data) => setTrades(data || []));
+      .then((data) => {
+        console.log("data", data);
+        setTrades(data || []);
+      });
   }, [itemId]);
 
   // 정렬/필터

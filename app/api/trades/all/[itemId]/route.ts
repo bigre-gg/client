@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   req: NextRequest,
-  context: { params: { itemId: string } }
+  context: { params: { itemId: number } }
 ) {
   try {
     const { itemId } = await context.params;
@@ -11,7 +11,7 @@ export async function GET(
     }
     // 백엔드로 프록시 GET 요청
     const backendRes = await fetch(
-      `http://localhost:8000/trades/all/${itemId}`,
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/trades/all/${itemId}`,
       {
         method: "GET",
         headers: {

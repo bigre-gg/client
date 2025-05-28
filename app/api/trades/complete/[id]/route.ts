@@ -9,7 +9,7 @@ export async function POST(
     return new NextResponse("id is required", { status: 400 });
   }
   const backendRes = await fetch(
-    `http://localhost:8000/trades/complete/${id}`,
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/trades/complete/${id}`,
     {
       method: "POST",
       headers: {

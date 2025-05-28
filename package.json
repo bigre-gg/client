@@ -3,7 +3,13 @@
   "scripts": {
     "build": "next build",
     "dev": "next dev --turbopack",
-    "start": "next start"
+    "dev:local": "dotenv -e env/.env.local -- next dev --turbo",
+    "dev:dev": "dotenv -e env/.env.development -- next dev --turbo",
+    "dev:prod": "dotenv -e env/.env.production -- next dev --turbo",
+    "start": "next start",
+    "start:local": "dotenv -e env/.env.local -- next start",
+    "start:dev": "dotenv -e env/.env.development -- next start",
+    "start:prod": "dotenv -e env/.env.production -- next start"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",

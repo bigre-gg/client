@@ -9,8 +9,16 @@ export default function ItemIcon({
   size?: number;
   disableDarkBg?: boolean;
 }) {
-  // 클라이언트에서 직접 외부 이미지 서버로 요청
-  const src = `https://maplestory.io/api/gms/123/item/${id}/icon`;
+  // 예외 아이템: id별로 public 이미지 직접 사용
+  const specialIcons: Record<number, string> = {
+    101: "/bronzeCoin.png",
+    102: "/silverCoin.png",
+    103: "/goldCoin.png",
+    200: "/miracleCube.png",
+    300: "/highPerformanceSpeaker.png",
+  };
+  const src =
+    specialIcons[id] || `https://maplestory.io/api/gms/123/item/${id}/icon`;
   return (
     <div
       className={disableDarkBg ? "bg-lightBg" : "bg-lightBg dark:bg-darkBg"}

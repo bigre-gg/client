@@ -1,5 +1,30 @@
 [
   {
+    "id": 101,
+    "name": "브론즈 코인",
+    "isEquip": false
+  },
+  {
+    "id": 102,
+    "name": "실버 코인",
+    "isEquip": false
+  },
+  {
+    "id": 103,
+    "name": "골드 코인",
+    "isEquip": false
+  },
+  {
+    "id": 200,
+    "name": "미라클 큐브",
+    "isEquip": false
+  },
+  {
+    "id": 300,
+    "name": "고성능 확성기",
+    "isEquip": false
+  },
+  {
     "id": 1012011,
     "name": "루돌프의 빨간코",
     "isEquip": true

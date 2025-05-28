@@ -2,20 +2,24 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   req: NextRequest,
-  context: { params: { id: string } }
+  context: { params: { id: number } }
 ) {
   const { id } = context.params;
   if (!id) {
     return new NextResponse("id is required", { status: 400 });
   }
-  const backendRes = await fetch(`http://localhost:8000/trades/${id}`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      cookie: req.headers.get("cookie") || "",
-    },
-    credentials: "include",
-  });
+  console.log("id", id);
+  const backendRes = await fetch(
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/trades/${id}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        cookie: req.headers.get("cookie") || "",
+      },
+      credentials: "include",
+    }
+  );
   if (!backendRes.ok) {
     const text = await backendRes.text();
     return new NextResponse(`Failed to fetch trade: ${text}`, {
@@ -28,22 +32,25 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  context: { params: { id: string } }
+  context: { params: { id: number } }
 ) {
   const { id } = context.params;
   if (!id) {
     return new NextResponse("id is required", { status: 400 });
   }
   const data = await req.json();
-  const backendRes = await fetch(`http://localhost:8000/trades/${id}`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      cookie: req.headers.get("cookie") || "",
-    },
-    credentials: "include",
-    body: JSON.stringify(data),
-  });
+  const backendRes = await fetch(
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/trades/${id}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        cookie: req.headers.get("cookie") || "",
+      },
+      credentials: "include",
+      body: JSON.stringify(data),
+    }
+  );
   if (!backendRes.ok) {
     const text = await backendRes.text();
     return new NextResponse(`Failed to update trade: ${text}`, {
@@ -62,14 +69,17 @@ export async function DELETE(
   if (!id) {
     return new NextResponse("id is required", { status: 400 });
   }
-  const backendRes = await fetch(`http://localhost:8000/trades/${id}`, {
-    method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-      cookie: req.headers.get("cookie") || "",
-    },
-    credentials: "include",
-  });
+  const backendRes = await fetch(
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/trades/${id}`,
+    {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        cookie: req.headers.get("cookie") || "",
+      },
+      credentials: "include",
+    }
+  );
   if (!backendRes.ok) {
     const text = await backendRes.text();
     return new NextResponse(`Failed to cancel trade: ${text}`, {
