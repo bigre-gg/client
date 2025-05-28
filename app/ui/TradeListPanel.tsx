@@ -688,10 +688,6 @@ export default function TradeListPanel(props: TradeListPanelProps) {
       .then((data) => setData(data || []));
   }, [itemId, propTrades]);
 
-  useEffect(() => {
-    console.log("TradeListPanel filter prop:", filter);
-  }, [filter]);
-
   // 기본 필터값과 현재 filter가 완전히 같으면(즉, 필터가 적용되지 않은 상태면) 전체를 보여주도록 처리
   function isDefaultFilter(filterObj: any, baseItem: any) {
     // item-filter.tsx의 getDefaultFilters와 동일하게 맞춰야 함
@@ -889,59 +885,6 @@ export default function TradeListPanel(props: TradeListPanelProps) {
   const buyTrades = filteredTrades.filter(
     (t: any) => (isProfileMode ? t.trade.type : t.type) === "BUY"
   );
-
-  // 진단용 로그 추가
-  useEffect(() => {
-    // 타입 에러 방지용 any 캐스팅
-    console.log(
-      "filteredTrades:",
-      filteredTrades.map((t) =>
-        isProfileMode
-          ? {
-              status: (t as any).trade?.status,
-              type: (t as any).trade?.type,
-              id: (t as any).trade?._id,
-            }
-          : {
-              status: (t as any).status,
-              type: (t as any).type,
-              id: (t as any)._id,
-            }
-      )
-    );
-    console.log(
-      "sellTrades:",
-      sellTrades.map((t) =>
-        isProfileMode
-          ? {
-              status: (t as any).trade?.status,
-              type: (t as any).trade?.type,
-              id: (t as any).trade?._id,
-            }
-          : {
-              status: (t as any).status,
-              type: (t as any).type,
-              id: (t as any)._id,
-            }
-      )
-    );
-    console.log(
-      "buyTrades:",
-      buyTrades.map((t) =>
-        isProfileMode
-          ? {
-              status: (t as any).trade?.status,
-              type: (t as any).trade?.type,
-              id: (t as any).trade?._id,
-            }
-          : {
-              status: (t as any).status,
-              type: (t as any).type,
-              id: (t as any)._id,
-            }
-      )
-    );
-  }, [filteredTrades, sellTrades, buyTrades]);
 
   // 디스코드 아바타 url
   function getDiscordAvatarUrl(

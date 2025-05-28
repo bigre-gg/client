@@ -99,7 +99,6 @@ export default function TradeRegisterPage({
         try {
           // getItemById 함수를 사용하여 아이템 정보 가져오기
           const itemData = await getItemById(params.id);
-          console.log("가져온 아이템 데이터:", itemData);
 
           // 상태 설정
           setItem(itemData);
@@ -212,7 +211,6 @@ export default function TradeRegisterPage({
             quantity: Number(quantity) > 0 ? Number(quantity) : 1,
           };
 
-    console.log("Submitting item:", reqData);
     try {
       const response = await fetch("/api/trades", {
         method: "POST",
