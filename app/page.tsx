@@ -20,7 +20,7 @@ function getItemMeta(id: number) {
 function MainItemList() {
   const router = useRouter();
   return (
-    <div className="w-full max-w-[320px] mx-auto flex flex-col gap-0 max-h-[320px] overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-300 dark:scrollbar-thumb-zinc-700">
+    <div className="w-full flex flex-col gap-0 max-h-[320px] overflow-y-auto">
       {MAIN_ITEM_IDS.map((id) => {
         const meta = getItemMeta(id);
         if (!meta) return null;
@@ -51,7 +51,7 @@ function PopularItemList() {
       .then((data) => setPopular(data));
   }, []);
   return (
-    <div className="w-full max-w-[320px] mx-auto flex flex-col gap-0 max-h-[320px] overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-300 dark:scrollbar-thumb-zinc-700">
+    <div className="w-full flex flex-col gap-0 max-h-[320px] overflow-y-auto">
       {popular.map(({ itemId, count }) => {
         const meta = getItemMeta(itemId);
         if (!meta) return null;
@@ -100,15 +100,15 @@ export default function Page() {
         </div>
       </Link>
       {/* 주요/인기 아이템 리스트 */}
-      <div className="w-full flex flex-col md:flex-row gap-2 justify-center items-start mt-10">
-        <div className="flex-1 flex flex-col items-center">
-          <div className="font-extrabold text-lg mb-4 text-blue-700 dark:text-blue-200 tracking-tight border-b-2 border-blue-200 dark:border-blue-800 pb-1 w-full max-w-[320px] text-left">
+      <div className="w-full flex flex-col md:flex-row md:justify-center md:items-start gap-2 mt-10">
+        <div className="w-full md:w-[320px] flex flex-col items-center">
+          <div className="font-extrabold text-lg mb-4 text-blue-700 dark:text-blue-200 tracking-tight border-b-2 border-blue-200 dark:border-blue-800 pb-1 w-full text-left">
             주요 아이템
           </div>
           <MainItemList />
         </div>
-        <div className="flex-1 flex flex-col items-center">
-          <div className="font-extrabold text-lg mb-4 text-yellow-700 dark:text-yellow-200 tracking-tight border-b-2 border-yellow-200 dark:border-yellow-800 pb-1 w-full max-w-[320px] text-left">
+        <div className="w-full md:w-[320px] flex flex-col items-center">
+          <div className="font-extrabold text-lg mb-4 text-yellow-700 dark:text-yellow-200 tracking-tight border-b-2 border-yellow-200 dark:border-yellow-800 pb-1 w-full text-left">
             인기 아이템
           </div>
           <PopularItemList />
