@@ -599,7 +599,13 @@ function TradeDetailModal({
               }`}
             disabled={trade.status === "COMPLETED"}
           >
-            {trade.status === "COMPLETED" ? "구매 완료" : "구매하기"}
+            {trade.status === "COMPLETED"
+              ? trade.type === "BUY"
+                ? "판매 완료"
+                : "구매 완료"
+              : trade.type === "BUY"
+              ? "판매하기"
+              : "구매하기"}
           </button>
         </div>
         <style jsx global>{`
@@ -682,11 +688,11 @@ export default function TradeListPanel(props: TradeListPanelProps) {
 
   // fetch trades if not provided
   useEffect(() => {
-    if (propTrades) return;
+    if (propTrades || Array.isArray(tradesWithBaseItem)) return;
     fetch(`/api/trades/all/${itemId}`)
       .then((res) => res.json())
       .then((data) => setData(data || []));
-  }, [itemId, propTrades]);
+  }, [itemId, propTrades, tradesWithBaseItem]);
 
   // 기본 필터값과 현재 filter가 완전히 같으면(즉, 필터가 적용되지 않은 상태면) 전체를 보여주도록 처리
   function isDefaultFilter(filterObj: any, baseItem: any) {
