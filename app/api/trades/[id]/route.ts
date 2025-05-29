@@ -8,7 +8,6 @@ export async function GET(
   if (!id) {
     return new NextResponse("id is required", { status: 400 });
   }
-  console.log("id", id);
   const backendRes = await fetch(
     `${process.env.NEXT_PUBLIC_API_BASE_URL}/trades/${id}`,
     {

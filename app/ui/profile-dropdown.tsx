@@ -46,7 +46,6 @@ export default function ProfileDropdown({
 
         if (res.ok) {
           const userData = await res.json();
-          console.log("Fetched user data successfully:", userData);
           if (userData.user) {
             setUser(userData.user);
           } else {
